@@ -18,6 +18,22 @@ namespace Unity.RenderStreaming
         public ButtonClickEvent click;
     }
 
+    [Serializable]
+    public class CaptureCameraInfo
+    {
+        [SerializeField, Tooltip("Camera to capture video stream")]
+        public Camera camera;
+
+        [SerializeField, Tooltip("Streaming size should match display aspect ratio")]
+        private Vector2Int streamingSize = new Vector2Int(1280, 720);
+    }
+
+    public class CameraMediaStream
+    {
+        public Camera camera;
+        public MediaStream[] mediaStreams = new MediaStream[2];
+    }
+
     public class RenderStreaming : MonoBehaviour
     {
 #pragma warning disable 0649
@@ -33,14 +49,11 @@ namespace Unity.RenderStreaming
             }
         };
 
-        [SerializeField, Tooltip("Streaming size should match display aspect ratio")]
-        private Vector2Int streamingSize = new Vector2Int(1280, 720);
-
         [SerializeField, Tooltip("Time interval for polling from signaling server")]
         private float interval = 5.0f;
 
-        [SerializeField, Tooltip("Camera to capture video stream")]
-        private Camera captureCamera;
+        [SerializeField, Tooltip("Capture cameras")]
+        private CaptureCameraInfo[] captureCameraInfoList;
 
         [SerializeField, Tooltip("Array to set your own click event")]
         private ButtonClickElement[] arrayButtonClickEvent;
@@ -51,8 +64,7 @@ namespace Unity.RenderStreaming
         private Dictionary<RTCPeerConnection, Dictionary<int, RTCDataChannel>> mapChannels = new Dictionary<RTCPeerConnection, Dictionary<int, RTCDataChannel>>();
         private RTCConfiguration conf;
         private string sessionId;
-        private MediaStream videoStream;
-        private MediaStream audioStream;
+        private Dictionary<Camera, CameraMediaStream> cameraMediaStreamDict = new Dictionary<Camera, CameraMediaStream>();
 
         public void Awake()
         {
@@ -73,8 +85,26 @@ namespace Unity.RenderStreaming
             {
                 yield break;
             }
-            videoStream = captureCamera.CaptureStream(streamingSize.x, streamingSize.y);
-            audioStream = Unity.WebRTC.Audio.CaptureStream();
+            foreach (var cameraInfo in captureCameraInfoList)
+            {
+                var camera = cameraInfo.camera;
+                var cameraMediaStream = new CameraMediaStream();
+                cameraMediaStreamDict.Add(camera, cameraMediaStream);
+                camera.CreateRenderStreamTexture(1280, 720, cameraMediaStream.mediaStreams.Length);
+                int texCount = camera.GetStreamTextureCount();
+                for (int i = 0; i < texCount; ++i)
+                {
+                    int index = i;
+                    cameraMediaStream.mediaStreams[i] = new MediaStream();
+                    var rt = camera.GetStreamTexture(index);
+                    var videoTrack = new VideoStreamTrack("videoTrack" + i, rt);
+                    cameraMediaStream.mediaStreams[i].AddTrack(videoTrack);
+                    cameraMediaStream.mediaStreams[i].AddTrack(new AudioStreamTrack("audioTrack"));
+                }
+            }
+
+            Audio.Start();
+
             signaling = new Signaling(urlSignaling);
             var opCreate = signaling.Create();
             yield return opCreate;
@@ -88,6 +118,7 @@ namespace Unity.RenderStreaming
 
             conf = default;
             conf.iceServers = iceServers;
+            conf.bundlePolicy = RTCBundlePolicy.kBundlePolicyMaxBundle;
             StartCoroutine(WebRTC.WebRTC.Update());
             StartCoroutine(LoopPolling());
         }
@@ -146,20 +177,24 @@ namespace Unity.RenderStreaming
                 {
                     if(state == RTCIceConnectionState.Disconnected)
                     {
-                        pc.Close();  
+                        pc.Close();
+                        pcs.Remove(offer.connectionId);
                     }
                 });
                 //make video bit rate starts at 16000kbits, and 160000kbits at max.
                 string pattern = @"(a=fmtp:\d+ .*level-asymmetry-allowed=.*)\r\n";
                 _desc.sdp = Regex.Replace(_desc.sdp, pattern, "$1;x-google-start-bitrate=16000;x-google-max-bitrate=160000\r\n");
                 pc.SetRemoteDescription(ref _desc);
-                foreach (var track in videoStream.GetTracks())
+
+                foreach (var k in cameraMediaStreamDict.Keys)
                 {
-                    pc.AddTrack(track);
-                }
-                foreach(var track in audioStream.GetTracks())
-                {
-                    pc.AddTrack(track);
+                    foreach (var mediaStream in cameraMediaStreamDict[k].mediaStreams)
+                    {
+                        foreach (var track in mediaStream.GetTracks())
+                        {
+                            pc.AddTrack(track, mediaStream.Id);
+                        }
+                    }
                 }
                 StartCoroutine(Answer(connectionId));
             }
