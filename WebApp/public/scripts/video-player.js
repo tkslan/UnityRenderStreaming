@@ -73,10 +73,11 @@ export class VideoPlayer {
       console.log('iceGatheringState changed:', e);
     };
     this.pc.ontrack = function (e) {
-      console.log('New track added: ', e.track);
-      console.log('New track added: ', e.streams);
+      console.log('New track added: ', e.track, e.streams);
       if(_this.video.srcObject == null) {
-        _this.video.srcObject = e.streams[0];
+        let stream = e.streams[0];
+        _this.video.srcObject = stream;
+        _this.createDataChannel(stream.id);
       }
     };
     this.pc.onicecandidate = function (e) {
@@ -85,16 +86,7 @@ export class VideoPlayer {
       }
     };
     // Create data channel with proxy server and set up handlers
-    this.channel = this.pc.createDataChannel('data');
-    this.channel.onopen = function () {
-      console.log('Datachannel connected.');
-    };
-    this.channel.onerror = function (e) {
-      console.log("The error " + e.error.message + " occurred\n while handling data with proxy server.");
-    };
-    this.channel.onclose = function () {
-      console.log('Datachannel disconnected.');
-    };
+    this.createDataChannel("data");
 
     const createResponse = await this.signaling.create();
     const data = await createResponse.json();
@@ -166,6 +158,20 @@ export class VideoPlayer {
   async setAnswer(sessionId, sdp) {
     const desc = new RTCSessionDescription({sdp:sdp, type:"answer"});
     await this.pc.setRemoteDescription(desc);
+  }
+
+  createDataChannel(label) {
+    // Create data channel with proxy server and set up handlers
+    this.channel = this.pc.createDataChannel(label);
+    this.channel.onopen = function () {
+      console.log('Datachannel connected.');
+    };
+    this.channel.onerror = function (e) {
+      console.log("The error " + e.error.message + " occurred\n while handling data with proxy server.");
+    };
+    this.channel.onclose = function () {
+      console.log('Datachannel disconnected.');
+    };
   }
 
   resizeVideo() {
