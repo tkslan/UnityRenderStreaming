@@ -28,6 +28,7 @@ export class VideoPlayer {
     }
     config.sdpSemantics = 'unified-plan';
     config.iceServers = [{urls: ['stun:stun.l.google.com:19302']}];
+    config.bundlePolicy = 'max-bundle';
     return config;
   }
 
@@ -53,6 +54,11 @@ export class VideoPlayer {
 
     // Create peerConnection with proxy server and set up handlers
     this.pc = new RTCPeerConnection(this.cfg);
+    this.pc.addTransceiver('video');
+    this.pc.addTransceiver('audio');
+    this.pc.addTransceiver('video');
+    this.pc.addTransceiver('audio');
+
     this.pc.onsignalingstatechange = function (e) {
       console.log('signalingState changed:', e);
     };
@@ -67,8 +73,11 @@ export class VideoPlayer {
       console.log('iceGatheringState changed:', e);
     };
     this.pc.ontrack = function (e) {
+      console.log('New track added: ', e.track);
       console.log('New track added: ', e.streams);
-      _this.video.srcObject = e.streams[0];
+      if(_this.video.srcObject == null) {
+        _this.video.srcObject = e.streams[0];
+      }
     };
     this.pc.onicecandidate = function (e) {
       if(e.candidate != null) {
