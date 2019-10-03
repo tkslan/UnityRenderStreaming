@@ -2,8 +2,9 @@
 using UnityEngine.InputSystem;
 using Unity.RenderStreaming;
 
-namespace UnityTemplateProjects
+namespace Unity.RenderStreaming
 {
+    [RequireComponent(typeof(Camera))]
     public class SimpleCameraController : MonoBehaviour
     {
         class CameraState
@@ -55,6 +56,8 @@ namespace UnityTemplateProjects
         CameraState m_TargetCameraState = new CameraState();
         CameraState m_InterpolatingCameraState = new CameraState();
         CameraState m_InitialCameraState = new CameraState();
+
+        RemoteInput m_remoteInput;
 
         [Header("Movement Settings")]
         [Tooltip("Movement Sensitivity Factor."), Range(0.001f, 1f)]
@@ -119,27 +122,27 @@ namespace UnityTemplateProjects
         Vector3 GetInputTranslationDirection()
         {
             Vector3 direction = new Vector3();
-            if (Keyboard.current.wKey.isPressed)
+            if (m_remoteInput.Keyboard.wKey.isPressed)
             {
                 direction += Vector3.forward;
             }
-            if (Keyboard.current.sKey.isPressed)
+            if (m_remoteInput.Keyboard.sKey.isPressed)
             {
                 direction += Vector3.back;
             }
-            if (Keyboard.current.aKey.isPressed)
+            if (m_remoteInput.Keyboard.aKey.isPressed)
             {
                 direction += Vector3.left;
             }
-            if (Keyboard.current.dKey.isPressed)
+            if (m_remoteInput.Keyboard.dKey.isPressed)
             {
                 direction += Vector3.right;
             }
-            if (Keyboard.current.qKey.isPressed)
+            if (m_remoteInput.Keyboard.qKey.isPressed)
             {
                 direction += Vector3.down;
             }
-            if (Keyboard.current.eKey.isPressed)
+            if (m_remoteInput.Keyboard.eKey.isPressed)
             {
                 direction += Vector3.up;
             }
@@ -149,10 +152,10 @@ namespace UnityTemplateProjects
             if (activeTouches.Count == 2)
             {
                 direction = GetTranslationFromInput((activeTouches[0].delta + activeTouches[1].delta) / 2f);
-            } else if (IsMouseDragged(Mouse.current,true)) {
-                direction = GetTranslationFromInput(Mouse.current.delta.ReadValue());
-            } else if (IsMouseDragged(RemoteInput.RemoteMouse,true)) {
-                direction = GetTranslationFromInput(RemoteInput.RemoteMouse.delta.ReadValue());
+            } else if (IsMouseDragged(m_remoteInput.RemoteMouse, true)) {
+                direction = GetTranslationFromInput(m_remoteInput.RemoteMouse.delta.ReadValue());
+            } else if (IsMouseDragged(m_remoteInput.RemoteMouse, true)) {
+                direction = GetTranslationFromInput(m_remoteInput.RemoteMouse.delta.ReadValue());
             }
 
             return direction;
@@ -160,17 +163,17 @@ namespace UnityTemplateProjects
 
         void FixedUpdate()
         {
-            if (Keyboard.current.uKey.isPressed)
+            if (m_remoteInput.Keyboard.uKey.isPressed)
             {
                 ResetCamera();
                 return;
             }
 
             // Rotation 
-            if (IsMouseDragged(Mouse.current,false)) {
-                UpdateTargetCameraStateFromInput(Mouse.current.delta.ReadValue());
-            } else if (IsMouseDragged(RemoteInput.RemoteMouse,false)) {
-                UpdateTargetCameraStateFromInput(RemoteInput.RemoteMouse.delta.ReadValue());
+            if (IsMouseDragged(m_remoteInput.RemoteMouse, false)) {
+                UpdateTargetCameraStateFromInput(m_remoteInput.RemoteMouse.delta.ReadValue());
+            } else if (IsMouseDragged(m_remoteInput.RemoteMouse,false)) {
+                UpdateTargetCameraStateFromInput(m_remoteInput.RemoteMouse.delta.ReadValue());
             } else if (UnityEngine.InputSystem.EnhancedTouch.Touch.activeTouches.Count == 1) {
                 UpdateTargetCameraStateFromInput(UnityEngine.InputSystem.EnhancedTouch.Touch.activeTouches[0].delta);                
             }
@@ -179,7 +182,7 @@ namespace UnityTemplateProjects
             var translation = GetInputTranslationDirection() * Time.deltaTime;
 
             // Speed up movement when shift key held
-            if (Keyboard.current.leftShiftKey.isPressed)
+            if (m_remoteInput.Keyboard.leftShiftKey.isPressed)
             {
                 translation *= 10.0f;
             }
@@ -197,12 +200,21 @@ namespace UnityTemplateProjects
             m_InterpolatingCameraState.UpdateTransform(transform);
         }
 
-        void ResetCamera()
+        public void SetRemoteInput(RemoteInput remoteInput)
+        {
+            m_remoteInput = remoteInput;
+        }
+
+        public RemoteInput RemoteInput
+        {
+            get { return m_remoteInput; }
+        }
+
+        public void ResetCamera()
         {
             m_InitialCameraState.UpdateTransform(transform);
             m_TargetCameraState.SetFromTransform(transform);
             m_InterpolatingCameraState.SetFromTransform(transform);
-
         }
 
 //---------------------------------------------------------------------------------------------------------------------

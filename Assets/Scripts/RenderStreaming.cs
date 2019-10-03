@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -62,22 +63,21 @@ namespace Unity.RenderStreaming
         private Signaling signaling;
         private Dictionary<string, RTCPeerConnection> pcs = new Dictionary<string, RTCPeerConnection>();
         private Dictionary<RTCPeerConnection, Dictionary<int, RTCDataChannel>> mapChannels = new Dictionary<RTCPeerConnection, Dictionary<int, RTCDataChannel>>();
+        private Dictionary<RTCDataChannel, RemoteInput> mapRemoteInput = new Dictionary<RTCDataChannel, RemoteInput>();
         private RTCConfiguration conf;
         private string sessionId;
         private Dictionary<Camera, CameraMediaStream> cameraMediaStreamDict = new Dictionary<Camera, CameraMediaStream>();
 
         public void Awake()
         {
-            WebRTC.WebRTC.Initialize(); 
-            RemoteInput.Initialize();
-            RemoteInput.ActionButtonClick = OnButtonClick;
+            WebRTC.WebRTC.Initialize();
+            UnityEngine.InputSystem.EnhancedTouch.EnhancedTouchSupport.Enable();
         }
 
         public void OnDestroy()
         {
             WebRTC.WebRTC.Finalize();
-            RemoteInput.Destroy();
-            Unity.WebRTC.Audio.Stop();
+            Audio.Stop();
         }
         public IEnumerator Start()
         {
@@ -101,6 +101,8 @@ namespace Unity.RenderStreaming
                     cameraMediaStream.mediaStreams[i].AddTrack(videoTrack);
                     cameraMediaStream.mediaStreams[i].AddTrack(new AudioStreamTrack("audioTrack"));
                 }
+                var controller = camera.GetComponent<SimpleCameraController>();
+                controller.SetRemoteInput(new RemoteInput());
             }
 
             Audio.Start();
@@ -276,19 +278,32 @@ namespace Unity.RenderStreaming
         }
         void OnDataChannel(RTCPeerConnection pc, RTCDataChannel channel)
         {
-            Dictionary<int, RTCDataChannel> channels;
-            if (!mapChannels.TryGetValue(pc, out channels))
+            if (!mapChannels.TryGetValue(pc, out var channels))
             {
                 channels = new Dictionary<int, RTCDataChannel>();
                 mapChannels.Add(pc, channels);
             }
             channels.Add(channel.Id, channel);
 
-            if(channel.Label == "data")
+            var remoteInput = FindRemoteInput(channel.Label);
+            mapRemoteInput.Add(channel, remoteInput);
+
+            channel.OnMessage = new DelegateOnMessage(bytes => { mapRemoteInput[channel].ProcessInput(bytes); });
+            channel.OnClose = new DelegateOnClose(() => { mapRemoteInput.Remove(channel); });
+        }
+
+        RemoteInput FindRemoteInput(string label)
+        {
+            foreach(var info in cameraMediaStreamDict)
             {
-                channel.OnMessage = new DelegateOnMessage(bytes => { RemoteInput.ProcessInput(bytes); });
-                channel.OnClose = new DelegateOnClose(() => { RemoteInput.Reset(); });
+                if(info.Value.mediaStreams.FirstOrDefault(stream => stream.Id == label) == null)
+                {
+                    continue;
+                }
+                var controller = info.Key.GetComponent<SimpleCameraController>();
+                return controller.RemoteInput;
             }
+            return null;
         }
 
         void OnButtonClick(int elementId)

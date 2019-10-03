@@ -19,31 +19,29 @@ namespace Unity.RenderStreaming
         ButtonClick = 4
     }
 
-    public static class RemoteInput
+    public class RemoteInput
     {
-        public static Keyboard Keyboard { get; private set; }
-        public static Mouse RemoteMouse { get; private set; }
-        public static Touchscreen RemoteTouch { get; private set; }
-        public static Action<int> ActionButtonClick;
+        public Keyboard Keyboard { get; private set; }
+        public Mouse RemoteMouse { get; private set; }
+        public Touchscreen RemoteTouch { get; private set; }
+        public Action<int> ActionButtonClick;
 
         static UnityEngine.Vector2Int m_prevMousePos;
         static bool m_isInitialized = false;
 
-        public static void Initialize()
+        public RemoteInput()
         {
             Keyboard = InputSystem.AddDevice<Keyboard>();
             RemoteMouse = InputSystem.AddDevice<Mouse>();
-            EnhancedTouchSupport.Enable();
             RemoteTouch = InputSystem.AddDevice<Touchscreen>();
             m_isInitialized = true;
         }
 
 //---------------------------------------------------------------------------------------------------------------------
-        public static void Destroy()
+        ~RemoteInput()
         {
             InputSystem.RemoveDevice(RemoteMouse);
             InputSystem.RemoveDevice(Keyboard);
-            EnhancedTouchSupport.Disable();
             InputSystem.RemoveDevice(RemoteTouch);
             RemoteMouse = null;
             Keyboard = null;
@@ -52,7 +50,7 @@ namespace Unity.RenderStreaming
         }
 //---------------------------------------------------------------------------------------------------------------------
 
-        public static void ProcessInput(byte[] bytes)
+        public void ProcessInput(byte[] bytes)
         {
             switch ((EventType)bytes[0])
             {
@@ -112,18 +110,15 @@ namespace Unity.RenderStreaming
             }
         }
 
-        public static void Reset()
+        public void Reset()
         {
-            if (!m_isInitialized)
-                return;
-
             InputSystem.QueueStateEvent(RemoteMouse, new MouseState());
             InputSystem.QueueStateEvent(Keyboard, new KeyboardState());
             InputSystem.QueueStateEvent(RemoteTouch, new TouchState());
             InputSystem.Update();
         }
 
-        static void ProcessKeyEvent(KeyboardEventType state, bool repeat, byte keyCode, char character)
+        void ProcessKeyEvent(KeyboardEventType state, bool repeat, byte keyCode, char character)
         {
             switch(state)
             {
@@ -143,7 +138,7 @@ namespace Unity.RenderStreaming
             }
         }
 
-        static void ProcessMouseMoveEvent(short x, short y, byte button)
+        void ProcessMouseMoveEvent(short x, short y, byte button)
         {
             var position = new UnityEngine.Vector2Int(x, y);
             var delta = position - m_prevMousePos;
@@ -151,19 +146,19 @@ namespace Unity.RenderStreaming
             m_prevMousePos = position;
         }
 
-        static void ProcessMouseWheelEvent(float scrollX, float scrollY)
+        void ProcessMouseWheelEvent(float scrollX, float scrollY)
         {
             InputSystem.QueueStateEvent(RemoteMouse, new MouseState { scroll = new UnityEngine.Vector2(scrollX, scrollY) });
         }
 
-        static void ProcessTouchMoveEvent(TouchState[] touches)
+        void ProcessTouchMoveEvent(TouchState[] touches)
         {
             for (var i = 0; i < touches.Length; i++)
             {
                 InputSystem.QueueStateEvent(RemoteTouch, touches[i]);
             }
         }
-        static void ChangeEndStateUnusedTouches(TouchState[] touches)
+        void ChangeEndStateUnusedTouches(TouchState[] touches)
         {
             int touchCount = Touch.activeTouches.Count;
             for (var i = 0; i < touchCount; i++)
@@ -185,12 +180,9 @@ namespace Unity.RenderStreaming
             }
         }
 
-        static void ProcessButtonClickEvent(int elementId)
+        void ProcessButtonClickEvent(int elementId)
         {
-            if (ActionButtonClick != null)
-            {
-                ActionButtonClick(elementId);
-            }
+            ActionButtonClick?.Invoke(elementId);
         }
     }
 }

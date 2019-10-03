@@ -43,14 +43,6 @@ namespace Unity.RenderStreaming
         }
     }
 
-    static class DownloadHandlerExtension
-    {
-        public static T FromJson<T>(this DownloadHandler handler)
-        {
-            return JsonUtility.FromJson<T>(handler.text);
-        }
-    }
-
     static class UnityWebRequestExtension
     {
         public static UnityWebRequestAsyncOperation SendWebRequest<T>(this UnityWebRequest own)
