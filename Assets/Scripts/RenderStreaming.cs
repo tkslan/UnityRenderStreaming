@@ -177,12 +177,21 @@ namespace Unity.RenderStreaming
                 pc.OnIceCandidate = new DelegateOnIceCandidate(candidate => { StartCoroutine(OnIceCandidate(offer.connectionId, candidate)); });
                 pc.OnIceConnectionChange = new DelegateOnIceConnectionChange(state =>
                 {
-                    if(state == RTCIceConnectionState.Disconnected)
+                    Debug.LogFormat("ICEConnectionStateChange {0}", state);
+                    if (state == RTCIceConnectionState.Disconnected)
                     {
                         pc.Close();
                         pcs.Remove(offer.connectionId);
                     }
                 });
+                pc.OnSignalingChange = new DelegateOnSignalingChange(state =>
+                {
+                    if(state == SignalingState.Stable)
+                    {
+                        Debug.Log("ICE recognition complete");
+                    }
+                });
+
                 //make video bit rate starts at 16000kbits, and 160000kbits at max.
                 string pattern = @"(a=fmtp:\d+ .*level-asymmetry-allowed=.*)\r\n";
                 _desc.sdp = Regex.Replace(_desc.sdp, pattern, "$1;x-google-start-bitrate=16000;x-google-max-bitrate=160000\r\n");

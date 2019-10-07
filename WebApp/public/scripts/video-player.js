@@ -59,9 +59,18 @@ export class VideoPlayer {
     this.pc.addTransceiver('audio');
     this.pc.addTransceiver('video');
     this.pc.addTransceiver('audio');
+    this.pc.onnegotiationneeded = function(e) {
+      console.log("onnegotiationneeded");
+      _this.startNegociation();
+    };
 
     this.pc.onsignalingstatechange = function (e) {
       console.log('signalingState changed:', e);
+      switch(_this.pc.signalingState) {
+        case "stable":
+          console.log("ICE recognition complete");
+          break;
+      }
     };
     this.pc.oniceconnectionstatechange = function (e) {
       console.log('iceConnectionState changed:', e);
@@ -88,20 +97,6 @@ export class VideoPlayer {
     };
     // Create data channel with proxy server and set up handlers
     this.createDataChannel("data");
-
-    const createResponse = await this.signaling.create();
-    const data = await createResponse.json();
-    this.sessionId = data.sessionId;
-
-    // create offer
-    const offer = await this.pc.createOffer(this.offerOptions);
-
-    await this.createConnection();
-    // set local sdp
-    offer.sdp = offer.sdp.replace(/useinbandfec=1/, 'useinbandfec=1;stereo=1;maxaveragebitrate=1048576');
-    const desc = new RTCSessionDescription({sdp:offer.sdp, type:"offer"});
-    await this.pc.setLocalDescription(desc);
-    await this.sendOffer(offer);
   };
 
   async createConnection() {
@@ -110,6 +105,22 @@ export class VideoPlayer {
     const data = await res.json();
     this.connectionId = data.connectionId;
   }
+
+  async startNegociation() {
+    const createResponse = await this.signaling.create();
+    const data = await createResponse.json();
+    this.sessionId = data.sessionId;
+
+    // create offer
+    const offer = await this.pc.createOffer(this.offerOptions);
+    await this.createConnection();
+    // set local sdp
+    offer.sdp = offer.sdp.replace(/useinbandfec=1/, 'useinbandfec=1;stereo=1;maxaveragebitrate=1048576');
+    const desc = new RTCSessionDescription({sdp:offer.sdp, type:"offer"});
+    await this.pc.setLocalDescription(desc);
+    await this.sendOffer(offer);
+  }
+
 
   async sendOffer(offer) {
     // signaling
@@ -128,6 +139,9 @@ export class VideoPlayer {
       const answers = data.answers;
       lastTimeRequest = Date.parse(res.headers.get('Date'));
 
+      if(this.isStabled()) {
+        break;
+      }
       if(answers.length > 0) {
         const answer = answers[0];
         await this.setAnswer(sessionId, answer.sdp);
@@ -149,7 +163,7 @@ export class VideoPlayer {
       if(candidates.length > 0) {
         for(let candidate of candidates[0].candidates) {
           const iceCandidate = new RTCIceCandidate({ candidate: candidate.candidate, sdpMid: candidate.sdpMid, sdpMLineIndex: candidate.sdpMLineIndex});
-          await this.pc.addIceCandidate(iceCandidate);
+          this.pc.addIceCandidate(iceCandidate);
         }
       }
       await this.sleep(interval);
@@ -159,6 +173,10 @@ export class VideoPlayer {
   async setAnswer(sessionId, sdp) {
     const desc = new RTCSessionDescription({sdp:sdp, type:"answer"});
     await this.pc.setRemoteDescription(desc);
+  }
+
+  isStabled() {
+    return this.pc.signalingState == "stable";
   }
 
   createDataChannel(label) {
