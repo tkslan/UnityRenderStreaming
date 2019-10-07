@@ -1,5 +1,6 @@
 import { VideoPlayer } from "./video-player.js";
 import { registerKeyboardEvents, registerMouseEvents, sendClickEvent } from "./register-events.js";
+import { setupMediaSelector } from "./media-selector.js";
 
 let playButton;
 let videoPlayer;
@@ -99,6 +100,7 @@ async function setupVideoPlayer(element, config) {
   await videoPlayer.setupConnection();
 
   videoPlayer.ondisconnect = onDisconnect;
+  videoPlayer.onaddtrackfinish = onAddTrackFinish;
   registerKeyboardEvents(videoPlayer);
   registerMouseEvents(videoPlayer, element);
 
@@ -110,6 +112,15 @@ function onDisconnect() {
   clearChildren(playerDiv);
   videoPlayer = null;
   showPlayButton();
+}
+
+function onAddTrackFinish(mediaStreams) {
+  let options = ["Select a media"];
+  for (let i = 0; i < mediaStreams.length; ++i)
+  {
+    options.push(mediaStreams[i].id);
+  }
+  setupMediaSelector(options, function(obj) { console.log(obj); });
 }
 
 function clearChildren(element) {

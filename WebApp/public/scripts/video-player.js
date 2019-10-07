@@ -19,6 +19,7 @@ export class VideoPlayer {
     this.interval = 3000;
     this.signaling = new Signaling();
     this.ondisconnect = function(){};
+    this.onaddtrackfinish = function (mediaStreams) {};
     this.sleep = msec => new Promise(resolve => setTimeout(resolve, msec));
   }
 
