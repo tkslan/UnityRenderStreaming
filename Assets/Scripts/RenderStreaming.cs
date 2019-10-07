@@ -26,13 +26,15 @@ namespace Unity.RenderStreaming
         public Camera camera;
 
         [SerializeField, Tooltip("Streaming size should match display aspect ratio")]
-        private Vector2Int streamingSize = new Vector2Int(1280, 720);
+        public Vector2Int streamingSize = new Vector2Int(1280, 720);
+
+        public int resolutionCount = 2;
     }
 
     public class CameraMediaStream
     {
         public Camera camera;
-        public MediaStream[] mediaStreams = new MediaStream[2];
+        public MediaStream[] mediaStreams;
     }
 
     public class RenderStreaming : MonoBehaviour
@@ -90,8 +92,9 @@ namespace Unity.RenderStreaming
                 var camera = cameraInfo.camera;
                 var cameraMediaStream = new CameraMediaStream();
                 cameraMediaStreamDict.Add(camera, cameraMediaStream);
-                camera.CreateRenderStreamTexture(1280, 720, cameraMediaStream.mediaStreams.Length);
+                camera.CreateRenderStreamTexture(cameraInfo.streamingSize.x, cameraInfo.streamingSize.y, cameraInfo.resolutionCount);
                 int texCount = camera.GetStreamTextureCount();
+                cameraMediaStream.mediaStreams = new MediaStream[texCount];
                 for (int i = 0; i < texCount; ++i)
                 {
                     int index = i;
@@ -120,7 +123,7 @@ namespace Unity.RenderStreaming
 
             conf = default;
             conf.iceServers = iceServers;
-            conf.bundlePolicy = RTCBundlePolicy.kBundlePolicyMaxBundle;
+//            conf.bundlePolicy = RTCBundlePolicy.kBundlePolicyMaxBundle;
             StartCoroutine(WebRTC.WebRTC.Update());
             StartCoroutine(LoopPolling());
         }

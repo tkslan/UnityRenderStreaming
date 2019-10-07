@@ -18,8 +18,8 @@ export class VideoPlayer {
     }, true);
     this.interval = 3000;
     this.signaling = new Signaling();
-    this.ondisconnect = function(){};
-    this.onaddtrackfinish = function (mediaStreams) {};
+    this.onDisconnect = function(){};
+    this.onAddTrackFinish = function (mediaStreams) {};
     this.sleep = msec => new Promise(resolve => setTimeout(resolve, msec));
   }
 
@@ -29,7 +29,7 @@ export class VideoPlayer {
     }
     config.sdpSemantics = 'unified-plan';
     config.iceServers = [{urls: ['stun:stun.l.google.com:19302']}];
-    config.bundlePolicy = 'max-bundle';
+//    config.bundlePolicy = 'max-bundle';
     return config;
   }
 
@@ -76,7 +76,7 @@ export class VideoPlayer {
       console.log('iceConnectionState changed:', e);
       console.log('pc.iceConnectionState:' + _this.pc.iceConnectionState);
       if(_this.pc.iceConnectionState === 'disconnected') {
-        _this.ondisconnect();
+        _this.onDisconnect();
       }
     };
     this.pc.onicegatheringstatechange = function (e) {
@@ -88,6 +88,9 @@ export class VideoPlayer {
         let stream = e.streams[0];
         _this.video.srcObject = stream;
         _this.createDataChannel(stream.id);
+      }
+      if(_this.onAddTrackFinish != null) {
+        _this.onAddTrackFinish(e.streams);
       }
     };
     this.pc.onicecandidate = function (e) {
@@ -252,4 +255,8 @@ export class VideoPlayer {
         break;
     }
   };
+
+  changeVideoStream(stream) {
+    this.video.srcObject = stream;
+  }
 }

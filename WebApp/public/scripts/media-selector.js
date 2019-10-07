@@ -1,7 +1,10 @@
 export function setupMediaSelector(options, callback)
 {
   const playerDiv = document.getElementById('player');
-  let mediaSelectDiv = document.createElement("div");
+  let mediaSelectDiv = document.getElementById("mediaSelect");
+  if(mediaSelectDiv != null)
+    playerDiv.removeChild(mediaSelectDiv);
+  mediaSelectDiv = document.createElement("div");
   mediaSelectDiv.id = "mediaSelect";
   mediaSelectDiv.setAttribute("style", "width:200px;");
   mediaSelectDiv.className = "custom-select";
@@ -42,7 +45,7 @@ export function setupMediaSelector(options, callback)
         s = this.parentNode.parentNode.getElementsByTagName("select")[0];
 
         //videoPlayer.selectMediaStream(this.innerHTML);
-        callback(this.innerHTML);
+        callback(j-1);
         console.log(this.innerHTML);
 
         h = this.parentNode.previousSibling;

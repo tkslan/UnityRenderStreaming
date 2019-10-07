@@ -4,6 +4,7 @@ import { setupMediaSelector } from "./media-selector.js";
 
 let playButton;
 let videoPlayer;
+let mediaStreams = [];
 
 showPlayButton();
 
@@ -99,8 +100,8 @@ async function setupVideoPlayer(element, config) {
   const videoPlayer = new VideoPlayer(element, config);
   await videoPlayer.setupConnection();
 
-  videoPlayer.ondisconnect = onDisconnect;
-  videoPlayer.onaddtrackfinish = onAddTrackFinish;
+  videoPlayer.onDisconnect = onDisconnect;
+  videoPlayer.onAddTrackFinish = onAddTrackFinish;
   registerKeyboardEvents(videoPlayer);
   registerMouseEvents(videoPlayer, element);
 
@@ -114,13 +115,17 @@ function onDisconnect() {
   showPlayButton();
 }
 
-function onAddTrackFinish(mediaStreams) {
+function onAddTrackFinish(streams) {
+  streams.forEach((stream) => {
+    if(mediaStreams.every(_stream => { return _stream.id != stream.id; })) {
+      mediaStreams.push(stream);
+    }
+  });
   let options = ["Select a media"];
-  for (let i = 0; i < mediaStreams.length; ++i)
-  {
-    options.push(mediaStreams[i].id);
+  for (let i = 0; i < mediaStreams.length; ++i) {
+    options.push(i+1);
   }
-  setupMediaSelector(options, function(obj) { console.log(obj); });
+  setupMediaSelector(options, function(index) { videoPlayer.changeVideoStream(mediaStreams[index]); });
 }
 
 function clearChildren(element) {
