@@ -38,7 +38,7 @@ RenderSettings:
   m_ReflectionIntensity: 1
   m_CustomReflection: {fileID: 0}
   m_Sun: {fileID: 2035111234}
-  m_IndirectSpecularColor: {r: 6.066754, g: 8.58853, b: 13.636173, a: 1}
+  m_IndirectSpecularColor: {r: 6.047993, g: 8.563536, b: 13.603699, a: 1}
   m_UseRadianceAmbientProbe: 0
 --- !u!157 &3
 LightmapSettings:
@@ -151,7 +151,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 168218571}
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 0.019999983, y: 1.196, z: 1.8101029}
+  m_LocalPosition: {x: 0.019999983, y: 1.196, z: 1.8101034}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 405591765}
@@ -1310,7 +1310,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1037846703}
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 0.019999983, y: 1.196, z: -0.6870253}
+  m_LocalPosition: {x: 0.019999983, y: 1.196, z: -0.6870254}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 405591765}
@@ -1862,8 +1862,10 @@ MonoBehaviour:
   captureCameraInfoList:
   - camera: {fileID: 1299133684}
     streamingSize: {x: 1280, y: 720}
+    resolutionCount: 1
   - camera: {fileID: 1410275124}
     streamingSize: {x: 1280, y: 720}
+    resolutionCount: 1
   arrayButtonClickEvent:
   - elementId: 1
     click:
@@ -3254,7 +3256,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 2059789766}
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 2.5101027, y: 1.196, z: 1.1760515}
+  m_LocalPosition: {x: 2.5101032, y: 1.196, z: 1.1760517}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 405591765}
