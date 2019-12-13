@@ -51,7 +51,7 @@ namespace Unity.RenderStreaming
         }
     }
 
-    static class UnityWebRequestExtension
+    public static class UnityWebRequestExtension
     {
         public static UnityWebRequestAsyncOperation SendWebRequest<T>(this UnityWebRequest own)
         {
@@ -94,58 +94,58 @@ namespace Unity.RenderStreaming
 
 #pragma warning disable 0649
     [Serializable]
-    class NewResData
+    public class NewResData
     {
         public string sessionId;
     }
 
     [Serializable]
-    class CreateConnectionResData
+    public class CreateConnectionResData
     {
         public string connectionId;
     }
 
     [Serializable]
-    class OfferResDataList
+    public class OfferResDataList
     {
         public OfferResData[] offers;
     }
 
     [Serializable]
-    class CandidateContainerResDataList
+    public class CandidateContainerResDataList
     {
         public CandidateContainerResData[] candidates;
     }
 
     [Serializable]
-    class OfferResData
+    public class OfferResData
     {
         public string connectionId;
         public string sdp;
     }
 
     [Serializable]
-    class AnswerContainerResDataList
+    public class AnswerContainerResDataList
     {
         public AnswerResData[] answers;
     }
 
     [Serializable]
-    class AnswerResData
+    public class AnswerResData
     {
         public string connectionId;
         public string sdp;
     }
 
     [Serializable]
-    class CandidateContainerResData
+    public class CandidateContainerResData
     {
         public string connectionId;
         public CandidateResData[] candidates;
     }
 
     [Serializable]
-    class CandidateResData
+    public class CandidateResData
     {
         public string candidate;
         public string sdpMid;

@@ -86,12 +86,18 @@ router.get('/offer', (req: Request, res: Response) => {
   // get `fromtime` parameter from request query
   const fromTime: number = req.query.fromtime ? Number(req.query.fromtime) : 0;
 
-  let arrayOffers = Array.from(offers);
-  if (fromTime > 0) {
-    arrayOffers = arrayOffers.filter((v) => v[1].datetime > fromTime);
+  const sessionId: string = req.header('session-id');
+  let connectionIds = Array.from(clients.get(sessionId));
+  connectionIds = connectionIds.filter((v) => offers.has(v));
+
+  const arr = [];
+  for (const connectionId of connectionIds) {
+    const offer = offers.get(connectionId);
+    if (offer.datetime > fromTime) {
+      arr.push({ connectionId, sdp: offer.sdp });
+    }
   }
-  const obj = arrayOffers.map((v) => ({ connectionId: v[0], sdp: v[1].sdp }));
-  res.json({ offers: obj });
+  res.json({ offers: arr });
 });
 
 router.get('/answer', (req: Request, res: Response) => {
