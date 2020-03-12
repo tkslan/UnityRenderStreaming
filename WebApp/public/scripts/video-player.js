@@ -68,7 +68,16 @@ export class VideoPlayer {
     };
     this.pc.ontrack = function (e) {
       console.log('New track added: ', e.streams);
-      _this.video.srcObject = e.streams[0];
+      const stream = e.streams[0];
+      const videoTracks = stream.getVideoTracks();
+      if(videoTracks != null) {
+        console.log("video track length=" + videoTracks.length);
+      }
+      const audioTracks = stream.getAudioTracks();
+      if(videoTracks != null) {
+        console.log("audio track length=" + audioTracks.length);
+      }
+      _this.video.srcObject = stream;
     };
     this.pc.onicecandidate = function (e) {
       if(e.candidate != null) {

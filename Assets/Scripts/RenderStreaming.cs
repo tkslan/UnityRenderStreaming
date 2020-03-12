@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 using Unity.WebRTC;
 using System.Text.RegularExpressions;
@@ -58,6 +59,7 @@ namespace Unity.RenderStreaming
         private RTCConfiguration conf;
         private string sessionId;
         private MediaStream audioStream;
+        private MediaStream videoStream;
         private List<VideoStreamTrack> videoTracks = new List<VideoStreamTrack>();
 
         public void Awake()
@@ -77,11 +79,15 @@ namespace Unity.RenderStreaming
 
         public IEnumerator Start()
         {
+            videoStream = new MediaStream();
             foreach (var _camera in captureCameras)
             {
-                videoTracks.Add(_camera.CaptureStreamTrack(streamingSize.x, streamingSize.y, bitrate));
+                var track = _camera.CaptureStreamTrack(streamingSize.x, streamingSize.y, bitrate);
+                videoTracks.Add(track);
+                videoStream.AddTrack(track);
             }
             audioStream = WebRTC.Audio.CaptureStream();
+
             signaling = new Signaling(urlSignaling);
             var opCreate = signaling.Create();
             yield return opCreate;
@@ -158,28 +164,56 @@ namespace Unity.RenderStreaming
                         pc.Close();
                     }
                 };
+
+                foreach (var track in videoStream.GetTracks())
+                {
+                    Debug.Log("add video track id" + track.Id);
+                    pc.AddTrack(track, videoStream);
+                    //pc.AddTransceiver(track, videoStream, RTCRtpTransceiverDirection.SendOnly);
+                }
+                Debug.Log("videoStream id=" + videoStream.Id);
+                Debug.Log("videoStream tracks count=" + videoStream.GetVideoTracks().Count());
+
+                foreach (var track in audioStream.GetTracks())
+                {
+                    pc.AddTrack(track);
+                }
+
                 //make video bit rate starts at 16000kbits, and 160000kbits at max.
                 string pattern = @"(a=fmtp:\d+ .*level-asymmetry-allowed=.*)\r\n";
                 _desc.sdp = Regex.Replace(_desc.sdp, pattern, "$1;x-google-start-bitrate=16000;x-google-max-bitrate=160000\r\n");
-                pc.SetRemoteDescription(ref _desc);
-
-                foreach (var track in videoTracks)
+                var op2 = pc.SetRemoteDescription(ref _desc);
+                yield return op2;
+                RTCAnswerOptions options = default;
+                var _op = pc.CreateAnswer(ref options);
+                yield return _op;
+                /*
+                if (op.IsError)
                 {
-                    pc.AddTrack(track);
+                    Debug.LogError($"Network Error: {op.Error}");
+                    yield break;
                 }
+                */
 
-                foreach(var track in audioStream.GetTracks())
-                {
-                    pc.AddTrack(track);
-                }
+                var desc = _op.Desc;
+                Debug.Log("answer sdp video count=" + desc.sdp.Split('\n').Count(line => line.Contains("m=video")));
+
+
                 StartCoroutine(Answer(connectionId));
             }
         }
 
         IEnumerator Answer(string connectionId)
         {
-            RTCAnswerOptions options = default;
             var pc = pcs[connectionId];
+
+            RTCOfferOptions _options = default;
+            var _op = pc.CreateOffer(ref _options);
+            yield return _op;
+            Debug.Log("sdp video count=" + _op.Desc.sdp.Split('\n').Count(line => line.Contains("m=video")));
+
+
+            RTCAnswerOptions options = default;
             var op = pc.CreateAnswer(ref options);
             yield return op;
             if (op.IsError)
@@ -189,6 +223,7 @@ namespace Unity.RenderStreaming
             }
 
             var desc = op.Desc;
+            Debug.Log("sdp video count=" +desc.sdp.Split('\n').Count(line => line.Contains("m=video")));
             var opLocalDesc = pc.SetLocalDescription(ref desc);
             yield return opLocalDesc;
             if (opLocalDesc.IsError)
@@ -197,6 +232,7 @@ namespace Unity.RenderStreaming
                 yield break;
             }
             var op3 = signaling.PostAnswer(this.sessionId, connectionId, op.Desc.sdp);
+            Debug.Log(op.Desc.sdp);
             yield return op3;
             if (op3.webRequest.isNetworkError)
             {
