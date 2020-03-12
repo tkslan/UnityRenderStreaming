@@ -57,7 +57,6 @@ namespace Unity.RenderStreaming
         private Dictionary<RTCPeerConnection, Dictionary<int, RTCDataChannel>> mapChannels = new Dictionary<RTCPeerConnection, Dictionary<int, RTCDataChannel>>();
         private RTCConfiguration conf;
         private string sessionId;
-        private MediaStream videoStream;
         private MediaStream audioStream;
         private List<VideoStreamTrack> videoTracks = new List<VideoStreamTrack>();
 
@@ -76,11 +75,8 @@ namespace Unity.RenderStreaming
             Unity.WebRTC.Audio.Stop();
         }
 
-        private VideoStreamTrack videoTrack;
-
         public IEnumerator Start()
         {
-            videoStream = new MediaStream();
             foreach (var _camera in captureCameras)
             {
                 videoTracks.Add(_camera.CaptureStreamTrack(streamingSize.x, streamingSize.y, bitrate));
