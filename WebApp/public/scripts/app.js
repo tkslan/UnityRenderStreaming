@@ -32,12 +32,19 @@ function onClickPlayButton() {
 
   const playerDiv = document.getElementById('player');
 
-  // add video player
+  // add video
   const elementVideo = document.createElement('video');
   elementVideo.id = 'Video';
   elementVideo.style.touchAction = 'none';
   playerDiv.appendChild(elementVideo);
-  setupVideoPlayer(elementVideo).then(value => videoPlayer = value);
+
+  // add video thumbnail
+  const elementVideoThumb = document.createElement('videoThumb');
+  elementVideoThumb.id = 'VideoThumbnail';
+  elementVideoThumb.style.touchAction = 'none';
+  playerDiv.appendChild(elementVideoThumb);
+
+  setupVideoPlayer(elementVideo, elementVideoThumb).then(value => videoPlayer = value);
 
   // add green button
   const elementBlueButton = document.createElement('button');
@@ -103,8 +110,8 @@ function onClickPlayButton() {
   }
 }
 
-async function setupVideoPlayer(element, config) {
-  const videoPlayer = new VideoPlayer(element, config);
+async function setupVideoPlayer(element, elementVideoThumb, config) {
+  const videoPlayer = new VideoPlayer(element, elementVideoThumb, config);
   await videoPlayer.setupConnection();
 
   videoPlayer.ondisconnect = onDisconnect;

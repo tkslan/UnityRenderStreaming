@@ -1,7 +1,7 @@
 import Signaling from "./signaling.js"
 
 export class VideoPlayer {
-  constructor(element, config) {
+  constructor(element, elementThumb, config) {
     const _this = this;
     this.cfg = VideoPlayer.getConfiguration(config);
     this.pc = null;
@@ -22,6 +22,15 @@ export class VideoPlayer {
     this.videoTrackList = [];
     this.videoTrackIndex = 0;
     this.video.srcObject = this.localStream;
+
+    // For thumbnail
+    this.localStream2 = new MediaStream();
+    this.videoThumb = elementThumb;
+    this.videoThumb.srcObject = this.localStream2;
+    this.videoThumb.addEventListener('loadedmetadata', function () {
+      _this.videoThumb.play();
+    }, true);
+
     this.ondisconnect = function(){};
     this.sleep = msec => new Promise(resolve => setTimeout(resolve, msec));
   }
@@ -36,14 +45,26 @@ export class VideoPlayer {
   }
 
   switchVideo() {
-    this.videoTrackIndex = this.videoTrackIndex == 0 ? 1 : 0;
     if(this.videoTrackList.length < 2)
       return;
-    const tracks = this.localStream.getVideoTracks();
-    const track = tracks[0];  
-    this.localStream.removeTrack(track);
-    this.localStream.addTrack(this.videoTrackList[this.videoTrackIndex]);
+    const oldIndex = this.videoTrackIndex;
+    this.videoTrackIndex = this.videoTrackIndex == 0 ? 1 : 0;
+    const newTrack = this.videoTrackList[this.videoTrackIndex];
+    this.replaceTrack(this.localStream, newTrack);
+    const newTrackThumb = this.videoTrackList[oldIndex];
+    this.replaceTrack(this.localStream2, newTrackThumb);
   }
+
+  replaceTrack(stream, newTrack) {
+    const tracks = stream.getVideoTracks();
+    if(tracks.length > 0) {
+      const track = tracks[0];  
+      this.localStream.removeTrack(track);
+    }
+    this.localStream.addTrack(newTrack);
+  }
+
+
 
   async setupConnection() {
     const _this = this;
