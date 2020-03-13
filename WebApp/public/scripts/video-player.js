@@ -18,6 +18,8 @@ export class VideoPlayer {
     }, true);
     this.interval = 3000;
     this.signaling = new Signaling();
+    this.localStream = new MediaStream();
+    this.video.srcObject = this.localStream;
     this.ondisconnect = function(){};
     this.sleep = msec => new Promise(resolve => setTimeout(resolve, msec));
   }
@@ -67,8 +69,9 @@ export class VideoPlayer {
       console.log('iceGatheringState changed:', e);
     };
     this.pc.ontrack = function (e) {
-      console.log('New track added: ', e.streams);
-      _this.video.srcObject = e.streams[0];
+      console.log('New track added: ', e.track);
+      console.log('New track added: ', e.streams[0]);
+      _this.localStream.addTrack(e.track);
     };
     this.pc.onicecandidate = function (e) {
       if(e.candidate != null) {
