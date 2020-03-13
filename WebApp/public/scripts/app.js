@@ -66,6 +66,15 @@ function onClickPlayButton() {
     sendClickEvent(videoPlayer, 3);
   });
 
+  // add white button
+  const elementWhiteButton = document.createElement('button');
+  elementWhiteButton.id = "whiteButton";
+  elementWhiteButton.innerHTML = "Switch video";
+  playerDiv.appendChild(elementWhiteButton);
+  elementWhiteButton.addEventListener ("click", function() {
+    videoPlayer.switchVideo();
+  });
+
   // add fullscreen button
   const elementFullscreenButton = document.createElement('img');
   elementFullscreenButton.id = 'fullscreenButton';

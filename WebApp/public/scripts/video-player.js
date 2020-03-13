@@ -19,6 +19,8 @@ export class VideoPlayer {
     this.interval = 3000;
     this.signaling = new Signaling();
     this.localStream = new MediaStream();
+    this.videoTrackList = [];
+    this.videoTrackIndex = 0;
     this.video.srcObject = this.localStream;
     this.ondisconnect = function(){};
     this.sleep = msec => new Promise(resolve => setTimeout(resolve, msec));
@@ -31,6 +33,16 @@ export class VideoPlayer {
     config.sdpSemantics = 'unified-plan';
     config.iceServers = [{urls: ['stun:stun.l.google.com:19302']}];
     return config;
+  }
+
+  switchVideo() {
+    this.videoTrackIndex = this.videoTrackIndex == 0 ? 1 : 0;
+    if(this.videoTrackList.length < 2)
+      return;
+    const tracks = this.localStream.getVideoTracks();
+    const track = tracks[0];  
+    this.localStream.removeTrack(track);
+    this.localStream.addTrack(this.videoTrackList[this.videoTrackIndex]);
   }
 
   async setupConnection() {
@@ -71,7 +83,12 @@ export class VideoPlayer {
     this.pc.ontrack = function (e) {
       console.log('New track added: ', e.track);
       console.log('New track added: ', e.streams[0]);
-      _this.localStream.addTrack(e.track);
+      _this.videoTrackList.push(e.track);
+      if(e.track.kind == 'video' && _this.localStream.getVideoTracks().length == 0)
+        _this.localStream.addTrack(e.track);
+      if(e.track.kind == 'audio' && _this.localStream.getAudioTracks().length == 0)
+        _this.localStream.addTrack(e.track);
+
     };
     this.pc.onicecandidate = function (e) {
       if(e.candidate != null) {
@@ -94,8 +111,13 @@ export class VideoPlayer {
     const data = await createResponse.json();
     this.sessionId = data.sessionId;
 
+    this.pc.addTransceiver('video', { direction: 'recvonly' });
+    this.pc.addTransceiver('video', { direction: 'recvonly' });
+    this.pc.addTransceiver('audio', { direction: 'recvonly' });
+
     // create offer
-    const offer = await this.pc.createOffer(this.offerOptions);
+    //const offer = await this.pc.createOffer(this.offerOptions);
+    const offer = await this.pc.createOffer();
 
     await this.createConnection();
     // set local sdp
