@@ -10,27 +10,29 @@ export class VideoPlayer {
       offerToReceiveAudio: true,
       offerToReceiveVideo: true,
     };
+
+    this.localStream = new MediaStream();
     this.video = element;
     this.video.playsInline = true;
+    this.video.srcObject = this.localStream;
     this.video.addEventListener('loadedmetadata', function () {
       _this.video.play();
       _this.resizeVideo();
     }, true);
-    this.interval = 3000;
-    this.signaling = new Signaling();
-    this.localStream = new MediaStream();
-    this.videoTrackList = [];
-    this.videoTrackIndex = 0;
-    this.video.srcObject = this.localStream;
 
     // For thumbnail
     this.localStream2 = new MediaStream();
     this.videoThumb = elementThumb;
+    this.videoThumb.playsInline = true;
     this.videoThumb.srcObject = this.localStream2;
     this.videoThumb.addEventListener('loadedmetadata', function () {
       _this.videoThumb.play();
     }, true);
 
+    this.interval = 3000;
+    this.signaling = new Signaling();
+    this.videoTrackList = [];
+    this.videoTrackIndex = 0;
     this.ondisconnect = function(){};
     this.sleep = msec => new Promise(resolve => setTimeout(resolve, msec));
   }
@@ -59,9 +61,9 @@ export class VideoPlayer {
     const tracks = stream.getVideoTracks();
     if(tracks.length > 0) {
       const track = tracks[0];  
-      this.localStream.removeTrack(track);
+      stream.removeTrack(track);
     }
-    this.localStream.addTrack(newTrack);
+    stream.addTrack(newTrack);
   }
 
 
@@ -105,11 +107,15 @@ export class VideoPlayer {
       console.log('New track added: ', e.track);
       console.log('New track added: ', e.streams[0]);
       _this.videoTrackList.push(e.track);
-      if(e.track.kind == 'video' && _this.localStream.getVideoTracks().length == 0)
+      if(e.track.kind == 'video' && _this.localStream.getVideoTracks().length == 0) {
         _this.localStream.addTrack(e.track);
-      if(e.track.kind == 'audio' && _this.localStream.getAudioTracks().length == 0)
+      }
+      else {
+        _this.localStream2.addTrack(e.track);
+      }
+      if(e.track.kind == 'audio' && _this.localStream.getAudioTracks().length == 0) {
         _this.localStream.addTrack(e.track);
-
+      }
     };
     this.pc.onicecandidate = function (e) {
       if(e.candidate != null) {

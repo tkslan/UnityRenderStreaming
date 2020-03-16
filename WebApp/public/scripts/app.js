@@ -39,7 +39,7 @@ function onClickPlayButton() {
   playerDiv.appendChild(elementVideo);
 
   // add video thumbnail
-  const elementVideoThumb = document.createElement('videoThumb');
+  const elementVideoThumb = document.createElement('video');
   elementVideoThumb.id = 'VideoThumbnail';
   elementVideoThumb.style.touchAction = 'none';
   playerDiv.appendChild(elementVideoThumb);
