@@ -14,7 +14,6 @@ export class VideoPlayer {
     this.localStream = new MediaStream();
     this.video = element;
     this.video.playsInline = true;
-    this.video.srcObject = this.localStream;
     this.video.addEventListener('loadedmetadata', function () {
       _this.video.play();
       _this.resizeVideo();
@@ -24,7 +23,6 @@ export class VideoPlayer {
     this.localStream2 = new MediaStream();
     this.videoThumb = elementThumb;
     this.videoThumb.playsInline = true;
-    this.videoThumb.srcObject = this.localStream2;
     this.videoThumb.addEventListener('loadedmetadata', function () {
       _this.videoThumb.play();
     }, true);
@@ -106,6 +104,8 @@ export class VideoPlayer {
     this.pc.ontrack = function (e) {
       console.log('New track added: ', e.track);
       console.log('New track added: ', e.streams[0]);
+      _this.video.srcObject = _this.localStream;
+      _this.videoThumb.srcObject = _this.localStream2;
       _this.videoTrackList.push(e.track);
       if(e.track.kind == 'video' && _this.localStream.getVideoTracks().length == 0) {
         _this.localStream.addTrack(e.track);
@@ -143,7 +143,6 @@ export class VideoPlayer {
     this.pc.addTransceiver('audio', { direction: 'recvonly' });
 
     // create offer
-    //const offer = await this.pc.createOffer(this.offerOptions);
     const offer = await this.pc.createOffer();
 
     await this.createConnection();
