@@ -15,9 +15,10 @@ body{
 }
 
 #playButton{
-  width: 15%;
-  max-width: 200px;
+  width: 20%;
   cursor: pointer;
+  position:absolute;
+  opacity:75%;
 }
 
 #Video{

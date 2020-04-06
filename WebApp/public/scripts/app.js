@@ -4,7 +4,7 @@ import { registerKeyboardEvents, registerMouseEvents, sendClickEvent } from "./r
 let playButton;
 let videoPlayer;
 
-showPlayButton();
+startVideoPlayer();
 
 window.document.oncontextmenu = function () {
   return false;     // cancel default menu
@@ -14,6 +14,9 @@ window.addEventListener('resize', function() {
   videoPlayer.resizeVideo();
 }, true);
 
+window.addEventListener('onclose',function(){
+videoPlayer.close();
+},true);
 
 function showPlayButton() {
   if (!document.getElementById('playButton')) {
@@ -21,14 +24,18 @@ function showPlayButton() {
     elementPlayButton.id = 'playButton';
     elementPlayButton.src = 'images/Play.png';
     elementPlayButton.alt = 'Start Streaming';
+
     playButton = document.getElementById('player').appendChild(elementPlayButton);
-    playButton.addEventListener('click', onClickPlayButton);
+    playButton.addEventListener('click',function(){
+     videoPlayer.video.play();
+    playButton.style.display= 'none';
+    });
   }
 }
 
-function onClickPlayButton() {
+function startVideoPlayer() {
 
-  playButton.style.display = 'none';
+  //playButton.style.display = 'none';
 
   const playerDiv = document.getElementById('player');
 
@@ -38,15 +45,18 @@ function onClickPlayButton() {
   elementVideo.style.touchAction = 'none';
   playerDiv.appendChild(elementVideo);
   setupVideoPlayer(elementVideo).then(value => videoPlayer = value);
-
+  showPlayButton();
+/*
   // add green button
-  const elementBlueButton = document.createElement('button');
+  let elementBlueButton = document.createElement('img');
   elementBlueButton.id = "blueButton";
-  elementBlueButton.innerHTML = "Light on";
+  elementBlueButton.innerHTML = "Start";
+  elementBlueButton.src = 'images/Play.png';
   playerDiv.appendChild(elementBlueButton);
   elementBlueButton.addEventListener ("click", function() {
-    sendClickEvent(videoPlayer, 1);
-  });
+  videoPlayer.video.play();
+  elementBlueButton.style.display= 'none';
+});
 
   // add green button
   const elementGreenButton = document.createElement('button');
@@ -65,7 +75,7 @@ function onClickPlayButton() {
   elementOrangeButton.addEventListener ("click", function() {
     sendClickEvent(videoPlayer, 3);
   });
-
+*/
   // add fullscreen button
   const elementFullscreenButton = document.createElement('img');
   elementFullscreenButton.id = 'fullscreenButton';
@@ -108,6 +118,7 @@ async function setupVideoPlayer(element, config) {
 function onDisconnect() {
   const playerDiv = document.getElementById('player')
   clearChildren(playerDiv);
+  videoPlayer.close();
   videoPlayer = null;
   showPlayButton();
 }

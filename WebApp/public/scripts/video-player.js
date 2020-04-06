@@ -13,22 +13,32 @@ export class VideoPlayer {
     this.video = element;
     this.video.playsInline = true;
     this.video.addEventListener('loadedmetadata', function () {
-      _this.video.play();
+      //_this.video.play();
       _this.resizeVideo();
     }, true);
-    this.interval = 3000;
+    this.interval = 1000;
     this.signaling = new Signaling();
     this.ondisconnect = function(){};
-    this.sleep = msec => new Promise(resolve => setTimeout(resolve, msec));
+    this.sleep = msec => new Promise(resolve => setTimeout(resolve, msec),reject=>console.log(error));
+   
   }
+
+
 
   static getConfiguration(config) {
     if(config === undefined) {
       config = {};
     }
     config.sdpSemantics = 'unified-plan';
-    config.iceServers = [{urls: ['stun:stun.l.google.com:19302']}];
-    return config;
+    config.iceServers = [
+    {
+	urls: ["turn:repo.yslab.pro:3478","stun:repo.yslab.pro:3478"],
+	credential: "LkF5XPT7dbhx",
+	username: "test105"
+    }
+  ];
+
+   return config;
   }
 
   async setupConnection() {
@@ -72,13 +82,14 @@ export class VideoPlayer {
     };
     this.pc.onicecandidate = function (e) {
       if(e.candidate != null) {
-        _this.signaling.sendCandidate(_this.sessionId, _this.connectionId, e.candidate.candidate, e.candidate.sdpMid, e.candidate.sdpMLineIndex);
+        _this.signaling.sendCandidate(e.sessionId, e.connectionId, e.candidate.candidate, e.candidate.sdpMid, e.candidate.sdpMLineIndex);
       }
     };
     // Create data channel with proxy server and set up handlers
     this.channel = this.pc.createDataChannel('data');
     this.channel.onopen = function () {
-      console.log('Datachannel connected.');
+      
+      console.log('Datachannel connected. playin...');
     };
     this.channel.onerror = function (e) {
       console.log("The error " + e.error.message + " occurred\n while handling data with proxy server.");
@@ -193,6 +204,7 @@ export class VideoPlayer {
 
   close() {
     if (this.pc) {
+      this.sleep = null;
       console.log('Close current PeerConnection');
       this.pc.close();
       this.pc = null;
