@@ -82,7 +82,7 @@ export class VideoPlayer {
     };
     this.pc.onicecandidate = function (e) {
       if(e.candidate != null) {
-        _this.signaling.sendCandidate(e.sessionId, e.connectionId, e.candidate.candidate, e.candidate.sdpMid, e.candidate.sdpMLineIndex);
+        _this.signaling.sendCandidate(_this.sessionId, _this.connectionId, e.candidate.candidate, e.candidate.sdpMid, e.candidate.sdpMLineIndex);
       }
     };
     // Create data channel with proxy server and set up handlers
