@@ -127,6 +127,9 @@ export class VideoPlayer {
     this.loopGetCandidate(this.sessionId, this.interval);
   }
 
+  let answerIsSet = false;
+  let candidates = [];
+
   async loopGetAnswer(sessionId, interval) {
     // receive answer message from 30secs ago
     let lastTimeRequest = Date.now() - 30000;
@@ -140,6 +143,17 @@ export class VideoPlayer {
       if(answers.length > 0) {
         const answer = answers[0];
         await this.setAnswer(sessionId, answer.sdp);
+	
+	answerIsSet = true;
+	var len = candidates.length;
+	
+	for(var i = 0; i < len; i++)
+	{
+	   var item  = candidates[i];
+	   await this.pc.addIceCandidate(item);
+	   console.log("Added from cache: " + item);
+	}
+
       }
       await this.sleep(interval);
     }
@@ -157,8 +171,12 @@ export class VideoPlayer {
       const candidates = data.candidates.filter(v => v.connectionId = this.connectionId);
       if(candidates.length > 0) {
         for(let candidate of candidates[0].candidates) {
-          const iceCandidate = new RTCIceCandidate({ candidate: candidate.candidate, sdpMid: candidate.sdpMid, sdpMLineIndex: candidate.sdpMLineIndex});
-          await this.pc.addIceCandidate(iceCandidate);
+          var iceCandidate = new RTCIceCandidate({ candidate: candidate.candidate, sdpMid: candidate.sdpMid, sdpMLineIndex: candidate.sdpMLineIndex});
+          
+	  if (!answerIsSet)
+	     candidates.push(iceCandidate);	
+	  else
+	     await this.pc.addIceCandidate(iceCandidate);
         }
       }
       await this.sleep(interval);
