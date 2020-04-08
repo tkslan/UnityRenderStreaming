@@ -55,13 +55,16 @@ export class VideoPlayer {
       navigator.userAgent.match(/Safari/i) && !navigator.userAgent.match(/Chrome/i)
     ) {
       	var v = (navigator.appVersion).match(/OS (\d+)_(\d+)_?(\d+)?/);
-      	var verInfo = [parseInt(v[1], 10), parseInt(v[2], 10), parseInt(v[3] || 0, 10)];
-      	if(verInfo[0] <= 13)
-      	{
+	if(v!=null) //Not iOS Safari, maybe MacOs
+	{
+	  var verInfo = [parseInt(v[1], 10), parseInt(v[2], 10), parseInt(v[3] || 0, 10)];
+      	  if(verInfo[0] <= 12)
+      	  {
            alert("Twój system iOS nie jest aktualny.\nProsimy o potwierdzenie dodatkowych uprawnień w następnym okienku.");
            let stream = await navigator.mediaDevices.getUserMedia({audio: true});
            stream.getTracks().forEach(t => t.stop()); 
-        }
+          }
+	}
      }
 
     // Create peerConnection with proxy server and set up handlers
