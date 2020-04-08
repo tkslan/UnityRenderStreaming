@@ -3,6 +3,8 @@ import Signaling from "./signaling.js"
 export class VideoPlayer {
   constructor(element, config) {
     const _this = this;
+    this.answerIsSet = false;
+    this.candidatesArray = [];
     this.cfg = VideoPlayer.getConfiguration(config);
     this.pc = null;
     this.channel = null;
@@ -19,11 +21,8 @@ export class VideoPlayer {
     this.interval = 1000;
     this.signaling = new Signaling();
     this.ondisconnect = function(){};
-    this.sleep = msec => new Promise(resolve => setTimeout(resolve, msec),reject=>console.log(error));
-   
+    this.sleep = msec => new Promise(resolve => setTimeout(resolve, msec),reject=>console.log(error));   
   }
-
-
 
   static getConfiguration(config) {
     if(config === undefined) {
@@ -35,9 +34,7 @@ export class VideoPlayer {
 	urls: ["turn:repo.yslab.pro:3478","stun:repo.yslab.pro:3478"],
 	credential: "LkF5XPT7dbhx",
 	username: "test105"
-    }
-  ];
-
+    }];
    return config;
   }
 
@@ -57,7 +54,7 @@ export class VideoPlayer {
       navigator.userAgent.match(/iPhone/i) ||
       navigator.userAgent.match(/Safari/i) && !navigator.userAgent.match(/Chrome/i)
     ) {
-      let stream = await navigator.mediaDevices.getUserMedia({audio: true});
+      let stream = await navigator.mediaDevices.getUserMedia({audio: false});
       stream.getTracks().forEach(t => t.stop());
     }
 
@@ -88,12 +85,13 @@ export class VideoPlayer {
     // Create data channel with proxy server and set up handlers
     this.channel = this.pc.createDataChannel('data');
     this.channel.onopen = function () {
-      
       console.log('Datachannel connected. playin...');
     };
+
     this.channel.onerror = function (e) {
       console.log("The error " + e.error.message + " occurred\n while handling data with proxy server.");
     };
+
     this.channel.onclose = function () {
       console.log('Datachannel disconnected.');
     };
@@ -111,7 +109,7 @@ export class VideoPlayer {
     const desc = new RTCSessionDescription({sdp:offer.sdp, type:"offer"});
     await this.pc.setLocalDescription(desc);
     await this.sendOffer(offer);
-  };
+  }
 
   async createConnection() {
     // signaling
@@ -127,9 +125,6 @@ export class VideoPlayer {
     this.loopGetCandidate(this.sessionId, this.interval);
   }
 
-  let answerIsSet = false;
-  let candidates = [];
-
   async loopGetAnswer(sessionId, interval) {
     // receive answer message from 30secs ago
     let lastTimeRequest = Date.now() - 30000;
@@ -144,12 +139,12 @@ export class VideoPlayer {
         const answer = answers[0];
         await this.setAnswer(sessionId, answer.sdp);
 	
-	answerIsSet = true;
-	var len = candidates.length;
+	this.answerIsSet = true;
+	var len = this.candidatesArray.length;
 	
 	for(var i = 0; i < len; i++)
 	{
-	   var item  = candidates[i];
+	   var item  = this.candidatesArray[i];
 	   await this.pc.addIceCandidate(item);
 	   console.log("Added from cache: " + item);
 	}
@@ -173,8 +168,8 @@ export class VideoPlayer {
         for(let candidate of candidates[0].candidates) {
           var iceCandidate = new RTCIceCandidate({ candidate: candidate.candidate, sdpMid: candidate.sdpMid, sdpMLineIndex: candidate.sdpMLineIndex});
           
-	  if (!answerIsSet)
-	     candidates.push(iceCandidate);	
+	  if (!this.answerIsSet)
+	     this.candidatesArray.push(iceCandidate);	
 	  else
 	     await this.pc.addIceCandidate(iceCandidate);
         }
