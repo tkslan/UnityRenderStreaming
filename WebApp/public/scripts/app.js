@@ -28,8 +28,9 @@ function showPlayButton() {
     playButton = document.getElementById('player').appendChild(elementPlayButton);
     playButton.addEventListener('click',function(){
      videoPlayer.video.play();
-    playButton.style.display= 'none';
+    playButton.style.display = 'none';
     });
+    playButton.style.display = 'none';
   }
 }
 
@@ -44,7 +45,14 @@ function startVideoPlayer() {
   elementVideo.id = 'Video';
   elementVideo.style.touchAction = 'none';
   playerDiv.appendChild(elementVideo);
-  setupVideoPlayer(elementVideo).then(value => videoPlayer = value);
+  setupVideoPlayer(elementVideo).then((value) =>{
+     videoPlayer = value;
+     
+     videoPlayer.channel.onopen = function(){
+        console.log("Rock and roll baby...");
+        document.getElementById('playButton').style.display= 'block';
+     };
+  });
   showPlayButton();
 /*
   // add green button
