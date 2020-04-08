@@ -54,7 +54,7 @@ export class VideoPlayer {
       navigator.userAgent.match(/iPhone/i) ||
       navigator.userAgent.match(/Safari/i) && !navigator.userAgent.match(/Chrome/i)
     ) {
-      let stream = await navigator.mediaDevices.getUserMedia({audio: false});
+      let stream = await navigator.mediaDevices.getUserMedia({audio: true});
       stream.getTracks().forEach(t => t.stop());
     }
 
