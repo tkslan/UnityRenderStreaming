@@ -31,12 +31,13 @@ export class VideoPlayer {
     config.sdpSemantics = 'unified-plan';
     config.iceServers = [
     {
-	urls: ["turn:repo.yslab.pro:3478","stun:repo.yslab.pro:3478"],
-	credential: "LkF5XPT7dbhx",
-	username: "test105"
+	urls: ["turn:62.171.164.36:3478","stun:62.171.164.36:3478"],
+	credential: "och6eiRail1a",
+	username: "test5"
     }];
    return config;
   }
+
 
   async setupConnection() {
     const _this = this;
@@ -46,7 +47,6 @@ export class VideoPlayer {
       this.pc.close();
       this.pc = null;
     }
-
     // RTCDataChannel don't work on iOS safari
     // https://github.com/webrtc/samples/issues/1123
     if (
@@ -54,9 +54,15 @@ export class VideoPlayer {
       navigator.userAgent.match(/iPhone/i) ||
       navigator.userAgent.match(/Safari/i) && !navigator.userAgent.match(/Chrome/i)
     ) {
-      let stream = await navigator.mediaDevices.getUserMedia({audio: true});
-      stream.getTracks().forEach(t => t.stop());
-    }
+      	var v = (navigator.appVersion).match(/OS (\d+)_(\d+)_?(\d+)?/);
+      	var verInfo = [parseInt(v[1], 10), parseInt(v[2], 10), parseInt(v[3] || 0, 10)];
+      	if(verInfo[0] <= 13)
+      	{
+           alert("Twój system iOS nie jest aktualny.\nProsimy o potwierdzenie dodatkowych uprawnień w następnym okienku.");
+           let stream = await navigator.mediaDevices.getUserMedia({audio: true});
+           stream.getTracks().forEach(t => t.stop()); 
+        }
+     }
 
     // Create peerConnection with proxy server and set up handlers
     this.pc = new RTCPeerConnection(this.cfg);
