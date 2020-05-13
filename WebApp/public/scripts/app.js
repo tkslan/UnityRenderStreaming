@@ -6,6 +6,7 @@ let videoPlayer;
 let connection;
 let bitrateDiv;
 let currentResolution=5;
+const fpsSamplingRate = 30;
 startVideoPlayer();
 
 window.document.oncontextmenu = function () {
@@ -51,10 +52,10 @@ let fpsMeasures=0;
       fpsSum+=report.framerateMean;
 
       let avrFps = fpsSum / fpsMeasures;
-      if(fpsMeasures > 20){
+      if(fpsMeasures > fpsSamplingRate){
 	fpsMeasures=0;
 	fpsSum=0; 
-        if(avrFps < 15 && currentResolution > 1) { // && confirm("Fps is too low ("+ (avrFps).toFixed(2)+"), lower resolution")){
+        if(avrFps < 13 && currentResolution > 1) { // && confirm("Fps is too low ("+ (avrFps).toFixed(2)+"), lower resolution")){
           updateResolution(--currentResolution);
         }
         if(avrFps > 18 && currentResolution < 6) { // && confirm("Fps is good ("+ (avrFps).toFixed(2)+"), higher resolution")){
