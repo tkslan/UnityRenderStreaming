@@ -23,6 +23,9 @@ export class VideoPlayer {
     this.ondisconnect = function(){};
     this.sleep = msec => new Promise(resolve => setTimeout(resolve, msec),reject=>console.log(error));   
   }
+  get getConnection(){
+  return this.pc; 
+}
 
   static getConfiguration(config) {
     if(config === undefined) {
@@ -31,7 +34,7 @@ export class VideoPlayer {
     config.sdpSemantics = 'unified-plan';
     config.iceServers = [
     {
-	urls: ["turn:62.171.164.36:3478","stun:62.171.164.36:3478"],
+	urls: ["stun:stun.resimo.io:5349","turn:turn.resimo.io:5349"],
 	credential: "och6eiRail1a",
 	username: "test5"
     }];
@@ -114,7 +117,8 @@ export class VideoPlayer {
 
     await this.createConnection();
     // set local sdp
-    offer.sdp = offer.sdp.replace(/useinbandfec=1/, 'useinbandfec=1;stereo=1;maxaveragebitrate=1048576');
+    offer.sdp = offer.sdp.replace(/(a=fmtp:\d+ .*level-asymmetry-allowed=.*)\r\n/gm, "$1;x-google-start-bitrate=20000;x-google-max-bitrate=100000\r\n");
+    //offer.sdp = offer.sdp.replace(/useinbandfec=1/, 'useinbandfec=1;stereo=1;maxaveragebitrate=10485760');
     const desc = new RTCSessionDescription({sdp:offer.sdp, type:"offer"});
     await this.pc.setLocalDescription(desc);
     await this.sendOffer(offer);
@@ -233,6 +237,7 @@ export class VideoPlayer {
     }
   };
 
+
   sendMsg(msg) {
     if(this.channel == null) {
       return;
@@ -252,4 +257,29 @@ export class VideoPlayer {
         break;
     }
   };
+
+  showRemoteStats(results) {
+    const timestampPrev = null;
+    const bytesPrev = null;
+
+
+    // calculate video bitrate
+  results.forEach(report => {
+    const now = report.timestamp;
+    let bitrate;
+    if (report.type === 'inbound-rtp' && report.mediaType === 'video') {
+      const bytes = report.bytesReceived;
+      if (this.timestampPrev) {
+        bitrate = 8 * (bytes - this.bytesPrev) / (now - this.timestampPrev);
+        bitrate = Math.floor(bitrate);
+      }
+      this.bytesPrev = bytes;
+      this.timestampPrev = now;
+    }
+    if (bitrate) {
+      bitrate += ' kbits/sec';
+      elementFullscreenButton.innerHTML = `<strong>Bitrate:</strong>${bitrate}`;
+    }
+  });
+ };
 }

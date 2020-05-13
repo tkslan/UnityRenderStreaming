@@ -29,11 +29,13 @@ body{
   height: 100%;
 }
 
-#greenButton{
+
+
+#b144 {
     position: absolute;
     bottom: 10px;
     left: 10px;
-    width: 160px;
+    width: 100px;
     background-color: #4CAF50; /* Green */
     border: none;
     color: white;
@@ -43,12 +45,12 @@ body{
     display: inline-block;
     font-size: 16px;
 }
-#blueButton{
+#b240 {
     position: absolute;
     bottom: 10px;
-    left: 180px;
-    width: 160px;
-    background-color: #447FAF; /* Blue */
+    left: 120px;
+    width: 100px;
+    background-color: #4CAF50; /* Green */
     border: none;
     color: white;
     padding: 15px 32px;
@@ -57,13 +59,68 @@ body{
     display: inline-block;
     font-size: 16px;
 }
-
-#orangeButton{
+#b360 {
     position: absolute;
     bottom: 10px;
-    left: 350px;
-    width: 160px;
-    background-color: #FF7700; /* Blue */
+    left: 230px;
+    width: 100px;
+    background-color: #4CAF50; /* Green */
+    border: none;
+    color: white;
+    padding: 15px 32px;
+    text-align: center;
+    text-decoration: none;
+    display: inline-block;
+    font-size: 16px;
+}
+#b480{
+    position: absolute;
+    bottom: 10px;
+    left: 340px;
+    width: 100px;
+    background-color: #4CAF50; /* Green */
+    border: none;
+    color: white;
+    padding: 15px 32px;
+    text-align: center;
+    text-decoration: none;
+    display: inline-block;
+    font-size: 16px;
+}
+#b720 {
+    position: absolute;
+    bottom: 10px;
+    left: 450px;
+    width: 100px;
+    background-color: #4CAF50; /* Green */
+    border: none;
+    color: white;
+    padding: 15px 32px;
+    text-align: center;
+    text-decoration: none;
+    display: inline-block;
+    font-size: 16px;
+}
+#b1080 {
+    position: absolute;
+    bottom: 10px;
+    left: 560px;
+    width: 100px;
+    background-color: #4CAF50; /* Green */
+    border: none;
+    color: white;
+    padding: 15px 32px;
+    text-align: center;
+    text-decoration: none;
+    display: inline-block;
+    font-size: 16px;
+}
+#bitrateDiv {
+    position: absolute;
+    bottom: 10px;
+    left: 670px;
+    width: 200px;
+    background-color: #000; /* Green */
     border: none;
     color: white;
     padding: 15px 32px;

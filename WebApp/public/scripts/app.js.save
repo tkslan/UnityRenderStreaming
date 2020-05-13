@@ -3,8 +3,6 @@ import { registerKeyboardEvents, registerMouseEvents, sendClickEvent } from "./r
 
 let playButton;
 let videoPlayer;
-let connection;
-let bitrateDiv;
 
 startVideoPlayer();
 
@@ -19,38 +17,6 @@ window.addEventListener('resize', function() {
 window.addEventListener('onclose',function(){
 videoPlayer.close();
 },true);
-
-// Display statistics
-setInterval(() => {
-  if (connection) {
-      connection.getStats(null)
-        .then(showRemoteStats, err => console.log(err));
-  }
-},1000);
-
-let timestampPrev;
-let bytesPrev;
-
- function showRemoteStats(results) {
-    // calculate video bitrate
-  results.forEach(report => {
-    const now = report.timestamp;
-    let bitrate;
-    if (report.type === 'inbound-rtp' && report.mediaType === 'video') {
-      const bytes = report.bytesReceived;
-      if (timestampPrev) {
-        bitrate = 8 * (bytes - bytesPrev) / (now - timestampPrev);
-        bitrate = Math.floor(bitrate);
-      }
-      bytesPrev = bytes;
-      timestampPrev = now;
-    }
-    if (bitrate) {
-      bitrate += ' kbits/sec';
-      bitrateDiv.innerHTML = `Bitrate: ${bitrate}`;
-    }
-  });
- }
 
 function showPlayButton() {
   if (!document.getElementById('playButton')) {
@@ -83,7 +49,6 @@ function startVideoPlayer() {
      videoPlayer = value;
      
      videoPlayer.channel.onopen = function(){
-	connection = videoPlayer.getConnection;	
         console.log("Rock and roll baby..."+ videoPlayer.connectionId);
         document.getElementById('playButton').style.display= 'block';
      };
@@ -91,68 +56,33 @@ function startVideoPlayer() {
   showPlayButton();
 
   // add green button
-  const b144 = document.createElement('button');
-  b144.id = "b144";
-  b144.class = "button";
-  b144.innerHTML = "144p";
-  playerDiv.appendChild(b144);
-  b144.addEventListener ("click", function() {
-  sendClickEvent(videoPlayer,1);
-  window.location.reload(false);	
+  let elementBlueButton = document.createElement('img');
+  elementBlueButton.id = "blueButton";
+  elementBlueButton.innerHTML = "360p";
+  elementBlueButton.src = 'images/Play.png';
+  playerDiv.appendChild(elementBlueButton);
+  elementBlueButton.addEventListener ("click", function() {
+  videoPlayer.video.play();
+  elementBlueButton.style.display= 'none';
 });
 
   // add green button
-  const b240 = document.createElement('button');
-  b240.id = "b240";
-  b240.innerHTML = "240p";
-  playerDiv.appendChild(b240);
-  b240.addEventListener ("click", function() {
+  const elementGreenButton = document.createElement('button');
+  elementGreenButton.id = "";
+  elementGreenButton.innerHTML = "Light off";
+  playerDiv.appendChild(elementGreenButton);
+  elementGreenButton.addEventListener ("click", function() {
     sendClickEvent(videoPlayer, 2);
-    window.location.reload(false);
   });
 
   // add orange button
-  const b360 = document.createElement('button');
-  b360.id = "b360";
-  b360.innerHTML = "360p";
-  playerDiv.appendChild(b360);
-  b360.addEventListener ("click", function() {
+  const elementOrangeButton = document.createElement('button');
+  elementOrangeButton.id = "orangeButton";
+  elementOrangeButton.innerHTML = "Play audio";
+  playerDiv.appendChild(elementOrangeButton);
+  elementOrangeButton.addEventListener ("click", function() {
     sendClickEvent(videoPlayer, 3);
-    window.location.reload(false);
   });
-
-   // add green button
-  let b480 = document.createElement('button');
-  b480.id = "b480";
-  b480.innerHTML = "480p";
-  playerDiv.appendChild(b480);
-  b480.addEventListener ("click", function() {
-  sendClickEvent(videoPlayer,4);
-  window.location.reload(false);	
-});
- // add green button
-  let b720 = document.createElement('button');
-  b720.id = "b720";
-  b720.innerHTML = "720p";
-  playerDiv.appendChild(b720);
-  b720.addEventListener ("click", function() {
-  sendClickEvent(videoPlayer,5);
-  window.location.reload(false);	
-});
-// add black button
-  const b1080 = document.createElement('button');
-  b1080.id = "b1080";
-  b1080.innerHTML = "1080p";
-  playerDiv.appendChild(b1080);
-  b1080.addEventListener ("click", function() {
-    sendClickEvent(videoPlayer, 6);
-    window.location.reload(false);
-  });
-// add black button
-  bitrateDiv = document.createElement('div');
-  bitrateDiv.id = "bitrateDiv";
-  bitrateDiv.innerHTML = "Bitrate";
-  playerDiv.appendChild(bitrateDiv);
 
   // add fullscreen button
   const elementFullscreenButton = document.createElement('img');
