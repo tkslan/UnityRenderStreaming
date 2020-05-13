@@ -36,18 +36,23 @@ let bytesPrev;
   results.forEach(report => {
     const now = report.timestamp;
     let bitrate;
+    let fps;
+    let mbps;
     if (report.type === 'inbound-rtp' && report.mediaType === 'video') {
       const bytes = report.bytesReceived;
+      fps = (report.framerateMean).toFixed(2);
+      mbps= (report.bitrateMean/1000000).toFixed(2);
       if (timestampPrev) {
         bitrate = 8 * (bytes - bytesPrev) / (now - timestampPrev);
         bitrate = Math.floor(bitrate);
       }
+     
       bytesPrev = bytes;
       timestampPrev = now;
     }
     if (bitrate) {
       bitrate += ' kbits/sec';
-      bitrateDiv.innerHTML = `Bitrate: ${bitrate}`;
+      bitrateDiv.innerHTML = `Bitrate: ${bitrate}, ${fps} fps, ${mbps} mbps`;
     }
   });
  }
