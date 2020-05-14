@@ -5,9 +5,14 @@ let playButton;
 let videoPlayer;
 let connection;
 let bitrateDiv;
+let bitrateInfo;
+let elementVideo;
 let currentResolution=5;
 const fpsSamplingRate = 30;
+const useAutoSwitch=false;
+
 startVideoPlayer();
+setupVideo();
 
 window.document.oncontextmenu = function () {
   return false;     // cancel default menu
@@ -31,8 +36,8 @@ setInterval(() => {
 
 let timestampPrev;
 let bytesPrev;
-let fpsSum=0;
-let fpsMeasures=0;
+var fpsSum=0;
+var fpsMeasures=0;
  function showRemoteStats(results) {
     // calculate video bitrate
   results.forEach(report => {
@@ -42,33 +47,35 @@ let fpsMeasures=0;
     let mbps;
     if (report.type === 'inbound-rtp' && report.mediaType === 'video' && !report.isRemote) {
       const bytes = report.bytesReceived;
-      fps = (report.framerateMean).toFixed(2);
-      mbps= (report.bitrateMean/1000000).toFixed(2);
+      fps = Number.parseFloat(report.framerateMean).toFixed(2);
+      mbps= Number.parseFloat(report.bitrateMean/1000000).toFixed(2);
       if (timestampPrev) {
         bitrate = 8 * (bytes - bytesPrev) / (now - timestampPrev);
         bitrate = Math.floor(bitrate);
       }
       fpsMeasures++;
-      fpsSum+=report.framerateMean;
+      fpsSum += report.framerateMean;
 
       let avrFps = fpsSum / fpsMeasures;
-      if(fpsMeasures > fpsSamplingRate){
-	fpsMeasures=0;
-	fpsSum=0; 
+      if(fpsMeasures > fpsSamplingRate && useAutoSwitch){
+	
+        fpsMeasures = 0;
+	fpsSum = 0; 
+        
         if(avrFps < 13 && currentResolution > 1) { // && confirm("Fps is too low ("+ (avrFps).toFixed(2)+"), lower resolution")){
           updateResolution(--currentResolution);
         }
+
         if(avrFps > 18 && currentResolution < 6) { // && confirm("Fps is good ("+ (avrFps).toFixed(2)+"), higher resolution")){
           updateResolution(++currentResolution);
         }
-
       }
       bytesPrev = bytes;
       timestampPrev = now;
     }
     if (bitrate) {
       bitrate += ' kbits/sec';
-      bitrateDiv.innerHTML = `Bitrate: ${bitrate}, ${fps} fps, ${mbps} mbps, ${videoPlayer.videoHeight}P`;
+      bitrateInfo.innerHTML = `Bitrate: ${fps} fps, ${mbps} mbps`;
     }
   });
  }
@@ -79,7 +86,7 @@ function updateResolution(index) {
   console.log("New resolution index: "+index);
   videoPlayer.close();
   connection=null;
-  startVideoPlayer();
+  setupVideo();
 }
 }
 function showPlayButton() {
@@ -98,17 +105,7 @@ function showPlayButton() {
   }
 }
 
-function startVideoPlayer() {
-
-  //playButton.style.display = 'none';
-
-  const playerDiv = document.getElementById('player');
-
-  // add video player
-  const elementVideo = document.createElement('video');
-  elementVideo.id = 'Video';
-  elementVideo.style.touchAction = 'none';
-  playerDiv.appendChild(elementVideo);
+function setupVideo(){
   setupVideoPlayer(elementVideo).then((value) =>{
      videoPlayer = value;
      
@@ -119,53 +116,41 @@ function startVideoPlayer() {
         videoPlayer.video.play();
      };
   });
+}
+function startVideoPlayer() {
+
+  //playButton.style.display = 'none';
+
+  const playerDiv = document.getElementById('player');
+
+  // add video player
+  elementVideo = document.createElement('video');
+  elementVideo.id = 'Video';
+  elementVideo.style.touchAction = 'none';
+  playerDiv.appendChild(elementVideo);
   showPlayButton();
-/*
-  // add green button
-  const b144 = document.createElement('button');
-  b144.id = "b144";
-  b144.class = "button";
-  b144.innerHTML = "144p";
-  playerDiv.appendChild(b144);
-  b144.addEventListener ("click", updateResolution(1));
-
-  // add green button
-  const b240 = document.createElement('button');
-  b240.id = "b240";
-  b240.innerHTML = "240p";
-  playerDiv.appendChild(b240);
-  b240.addEventListener ("click", updateResolution(2));
-
-  // add orange button
-  const b360 = document.createElement('button');
-  b360.id = "b360";
-  b360.innerHTML = "360p";
-  playerDiv.appendChild(b360);
-  b360.addEventListener ("click", updateResolution(3));
-
-   // add green button
-  let b480 = document.createElement('button');
-  b480.id = "b480";
-  b480.innerHTML = "480p";
-  playerDiv.appendChild(b480);
-  b480.addEventListener ("click", updateResolution(4));
- // add green button
-  let b720 = document.createElement('button');
-  b720.id = "b720";
-  b720.innerHTML = "720p";
-  playerDiv.appendChild(b720);
-  b720.addEventListener ("click", updateResolution(5));
-// add black button
-  const b1080 = document.createElement('button');
-  b1080.id = "b1080";
-  b1080.innerHTML = "1080p";
-  playerDiv.appendChild(b1080);
-  b1080.addEventListener ("click", updateResolution(6));
-*/
 // add black button
   bitrateDiv = document.createElement('div');
   bitrateDiv.id = "bitrateDiv";
-  bitrateDiv.innerHTML = "Bitrate";
+  var bitrates = ["240p","360p","480p","720p","1080p"];
+  var bitrateSelect = document.createElement("select");
+  bitrateSelect.id ="bitrateSelect";
+  bitrateDiv.innerHTML="Quality:";
+  bitrateDiv.appendChild(bitrateSelect);
+  for(var i = 0;i < bitrates.length;i++){
+  var option=document.createElement("option");
+  option.setAttribute("value", i);
+  if(i==3)
+    option.setAttribute("selected","selected");
+  option.text = bitrates[i];
+  bitrateSelect.appendChild(option);
+  }
+  bitrateSelect.onchange = (evt) => { updateResolution(Number.parseInt(evt.srcElement.value)+2); } 
+
+  bitrateInfo = document.createElement('span');
+  bitrateInfo.id ="bitrateInfo";
+  bitrateInfo.innterHTML="<br> Informations:";
+  bitrateDiv.appendChild(bitrateInfo);
   playerDiv.appendChild(bitrateDiv);
 
   // add fullscreen button

@@ -29,97 +29,10 @@ body{
   height: 100%;
 }
 
-
-
-#b144 {
-    position: absolute;
-    bottom: 10px;
-    left: 10px;
-    width: 100px;
-    background-color: #4CAF50; /* Green */
-    border: none;
-    color: white;
-    padding: 15px 32px;
-    text-align: center;
-    text-decoration: none;
-    display: inline-block;
-    font-size: 16px;
-}
-#b240 {
-    position: absolute;
-    bottom: 10px;
-    left: 120px;
-    width: 100px;
-    background-color: #4CAF50; /* Green */
-    border: none;
-    color: white;
-    padding: 15px 32px;
-    text-align: center;
-    text-decoration: none;
-    display: inline-block;
-    font-size: 16px;
-}
-#b360 {
-    position: absolute;
-    bottom: 10px;
-    left: 230px;
-    width: 100px;
-    background-color: #4CAF50; /* Green */
-    border: none;
-    color: white;
-    padding: 15px 32px;
-    text-align: center;
-    text-decoration: none;
-    display: inline-block;
-    font-size: 16px;
-}
-#b480{
-    position: absolute;
-    bottom: 10px;
-    left: 340px;
-    width: 100px;
-    background-color: #4CAF50; /* Green */
-    border: none;
-    color: white;
-    padding: 15px 32px;
-    text-align: center;
-    text-decoration: none;
-    display: inline-block;
-    font-size: 16px;
-}
-#b720 {
-    position: absolute;
-    bottom: 10px;
-    left: 450px;
-    width: 100px;
-    background-color: #4CAF50; /* Green */
-    border: none;
-    color: white;
-    padding: 15px 32px;
-    text-align: center;
-    text-decoration: none;
-    display: inline-block;
-    font-size: 16px;
-}
-#b1080 {
-    position: absolute;
-    bottom: 10px;
-    left: 560px;
-    width: 100px;
-    background-color: #4CAF50; /* Green */
-    border: none;
-    color: white;
-    padding: 15px 32px;
-    text-align: center;
-    text-decoration: none;
-    display: inline-block;
-    font-size: 16px;
-}
 #bitrateDiv {
     position: absolute;
     bottom: 10px;
-    left: 670px;
-    width: 200px;
+    width: 250px;
     background-color: #000; /* Green */
     border: none;
     color: white;
@@ -128,6 +41,17 @@ body{
     text-decoration: none;
     display: inline-block;
     font-size: 16px;
+}
+
+#bitrateInfo {
+    bottom: 10px;
+    background-color: #000; /* Green */
+    border: 1px #fff;
+    color: white;
+    text-align: center;
+    text-decoration: none;
+    display: inherit;
+    font: 12px Verdana;
 }
 
 #fullscreenButton{
