@@ -1,4 +1,4 @@
-body{
+]body{
   margin: 0px;
 }
 
@@ -16,6 +16,13 @@ body{
 
 #playButton{
   width: 20%;
+  cursor: pointer;
+  position:absolute;
+  opacity:75%;
+}
+
+#loader{
+  width: 5%;
   cursor: pointer;
   position:absolute;
   opacity:75%;
@@ -40,7 +47,7 @@ body{
     text-align: center;
     text-decoration: none;
     display: inline-block;
-    font-size: 16px;
+    font-size: 16px Verdana;
 }
 
 #bitrateInfo {

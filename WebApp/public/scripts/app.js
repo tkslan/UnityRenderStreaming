@@ -1,6 +1,7 @@
 import { VideoPlayer } from "./video-player.js";
 import { registerKeyboardEvents, registerMouseEvents, sendClickEvent } from "./register-events.js";
 
+let loader;
 let playButton;
 let videoPlayer;
 let connection;
@@ -12,7 +13,9 @@ const fpsSamplingRate = 30;
 const useAutoSwitch=false;
 
 startVideoPlayer();
+showLoader();
 setupVideo();
+
 
 window.document.oncontextmenu = function () {
   return false;     // cancel default menu
@@ -29,6 +32,7 @@ videoPlayer.close();
 // Display statistics
 setInterval(() => {
   if (connection) {
+      loader.style.display = 'none';
       connection.getStats(null)
         .then(showRemoteStats, err => console.log(err));
   }
@@ -75,7 +79,7 @@ var fpsMeasures=0;
     }
     if (bitrate) {
       bitrate += ' kbits/sec';
-      bitrateInfo.innerHTML = `Bitrate: ${fps} fps, ${mbps} mbps`;
+      bitrateInfo.innerHTML = `Debug: ${fps} fps, ${mbps} mbps`;
     }
   });
  }
@@ -86,9 +90,25 @@ function updateResolution(index) {
   console.log("New resolution index: "+index);
   videoPlayer.close();
   connection=null;
+  showLoader();
   setupVideo();
 }
 }
+
+function showLoader(){
+if(!document.getElementById('loader'))
+{
+loader = document.createElement('img');
+loader.id = 'loader';
+loader.src = 'images/wobbly.gif';
+document.getElementById('player').appendChild(loader);
+}
+else
+{
+loader.style.display = 'inherit';
+}
+}
+
 function showPlayButton() {
   if (!document.getElementById('playButton')) {
     let elementPlayButton = document.createElement('img');
