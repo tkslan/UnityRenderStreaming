@@ -240,6 +240,8 @@ export class VideoPlayer {
       this.sleep = null;
       console.log('Close current PeerConnection');
       this.pc.close();
+      this.channel.close();
+      this.channel = null;
       this.pc = null;
     }
   };

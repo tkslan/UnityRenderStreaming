@@ -11,7 +11,7 @@ let elementVideo;
 let currentResolutionIndex = 5; //720p 
 const fpsSamplingRate = 30;
 const useAutoSwitch=false;
-
+let eventsRegistered=false;
 startVideoPlayer();
 showLoader();
 setupVideo();
@@ -224,8 +224,8 @@ async function setupVideoPlayer(element, config) {
 
   videoPlayer.ondisconnect = onDisconnect;
   registerKeyboardEvents(videoPlayer);
-  registerMouseEvents(videoPlayer, element);
-
+  registerMouseEvents(videoPlayer, element, eventsRegistered);
+  eventsRegistered=true;
   return videoPlayer;
 }
 

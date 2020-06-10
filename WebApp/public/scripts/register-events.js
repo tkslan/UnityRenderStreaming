@@ -142,7 +142,7 @@ const Keymap = {
 };
 
 export function registerKeyboardEvents(videoPlayer) {
-  const _videoPlayer = videoPlayer;
+  let _videoPlayer = videoPlayer;
   document.addEventListener('keyup', sendKeyUp, false);
   document.addEventListener('keydown', sendKeyDown, false);
 
@@ -162,10 +162,17 @@ export function registerKeyboardEvents(videoPlayer) {
   }
 }
 
-export function registerMouseEvents(videoPlayer, playerElement) {
-  const _videoPlayer = videoPlayer;
+export function registerMouseEvents(videoPlayer, playerElement, onlyPlayerUpdate) {
+  
+  let _videoPlayer = videoPlayer;
+  if(onlyPlayerUpdate) {
+  playerElement.removeEventListener('click', sendMouse, false);
+  playerElement.removeEventListener('mousedown', sendMouse, false);
+  playerElement.removeEventListener('mouseup', sendMouse, false);
+  playerElement.removeEventListener('mousemove', sendMouse, false);
+  playerElement.removeEventListener('wheel', sendMouseWheel, false);
 
-  // Listen to mouse events
+}  // Listen to mouse events
   playerElement.addEventListener('click', sendMouse, false);
   playerElement.addEventListener('mousedown', sendMouse, false);
   playerElement.addEventListener('mouseup', sendMouse, false);
@@ -179,6 +186,15 @@ export function registerMouseEvents(videoPlayer, playerElement) {
   // Touch event Level1 https://www.w3.org/TR/touch-events/
   // Touch event Level2 https://w3c.github.io/touch-events/
   //
+ 
+if(onlyPlayerUpdate)
+{
+  playerElement.removeEventListener('touchend', sendTouchEnd, false);
+  playerElement.removeEventListener('touchstart', sendTouchStart, false);
+  playerElement.removeEventListener('touchcancel', sendTouchCancel, false);
+  playerElement.removeEventListener('touchmove', sendTouchMove, false);
+
+}
   playerElement.addEventListener('touchend', sendTouchEnd, false);
   playerElement.addEventListener('touchstart', sendTouchStart, false);
   playerElement.addEventListener('touchcancel', sendTouchCancel, false);
@@ -265,7 +281,8 @@ export function registerMouseEvents(videoPlayer, playerElement) {
     // const y = (e.clientY - originY) / scale;
     const y = _videoPlayer.videoHeight - (e.clientY - originY) / scale;
 
-    //fuck off console.log("x: " + x + ", y: " + y + ", scale: " + scale + ", originX: " + originX + ", originY: " + originY + " mouse button:" + e.buttons);
+    if (e.buttons > 0) 
+	console.log("x: " + x + ", y: " + y + ", scale: " + scale + ", originX: " + originX + ", originY: " + originY + " mouse button:" + e.buttons);
     let data = new DataView(new ArrayBuffer(6));
     data.setUint8(0, InputEvent.Mouse);
     data.setInt16(1, x, true);
