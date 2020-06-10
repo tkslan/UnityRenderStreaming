@@ -18,6 +18,7 @@ export class VideoPlayer {
       //_this.video.play();
       _this.resizeVideo();
     }, true);
+    this.onMessage = new Event('onMessage');
     this.interval = 1000;
     this.signaling = new Signaling();
     this.ondisconnect = function(){};
@@ -100,6 +101,12 @@ export class VideoPlayer {
       console.log('Datachannel connected. playin...');
     };
 
+    this.channel.onmessage = function (e){
+    let messageData = e.data;
+    if(messageData[0]==='R')
+        _this.onMessage(messageData[1]);
+     console.log("Message recived: "+messageData[1]);
+};
     this.channel.onerror = function (e) {
       console.log("The error " + e.error.message + " occurred\n while handling data with proxy server.");
     };

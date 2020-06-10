@@ -8,7 +8,7 @@ let connection;
 let bitrateDiv;
 let bitrateInfo;
 let elementVideo;
-let currentResolution=5;
+let currentResolutionIndex = 5; //720p 
 const fpsSamplingRate = 30;
 const useAutoSwitch=false;
 
@@ -88,6 +88,7 @@ function updateResolution(index) {
  if(videoPlayer!=null && index > 0 && index < 7){ 
   sendClickEvent(videoPlayer,index);
   console.log("New resolution index: "+index);
+  currentResolutionIndex = index;
   videoPlayer.close();
   connection=null;
   showLoader();
@@ -125,6 +126,7 @@ function showPlayButton() {
   }
 }
 
+
 function setupVideo(){
   setupVideoPlayer(elementVideo).then((value) =>{
      videoPlayer = value;
@@ -134,9 +136,37 @@ function setupVideo(){
         console.log("Rock and roll baby..."+ videoPlayer.connectionId);
         document.getElementById('playButton').style.display= 'block';
         videoPlayer.video.play();
+
      };
+     videoPlayer.onMessage = function(e){
+     let resIndex=Number.parseInt(e[0]);
+     console.log("Resolution change request: "+resIndex);
+     document.querySelector('#bitrateSelect [value="' + resIndex + '"]').selected = true; 
+     updateResolution(resIndex);
+     }
   });
 }
+function populateResoultionSelector(defaultIndex, bitrateDiv){
+
+  var bitrates = ["0","144p","240p","360p","480p","720p","1080p"];
+  var bitrateSelect = document.createElement("select");
+  bitrateSelect.id ="bitrateSelect";
+  bitrateDiv.innerHTML="Quality:";
+  bitrateDiv.appendChild(bitrateSelect);
+
+ for(var i = 2;i < bitrates.length;i++){
+  var option=document.createElement("option");
+  option.setAttribute("value", i);
+  if(i==defaultIndex)
+    option.setAttribute("selected","selected");
+  option.text = bitrates[i];
+  bitrateSelect.appendChild(option);
+  }
+  
+bitrateSelect.onchange = (evt) => { updateResolution(Number.parseInt(evt.srcElement.value)); } 
+
+}
+
 function startVideoPlayer() {
 
   //playButton.style.display = 'none';
@@ -152,26 +182,13 @@ function startVideoPlayer() {
 // add black button
   bitrateDiv = document.createElement('div');
   bitrateDiv.id = "bitrateDiv";
-  var bitrates = ["240p","360p","480p","720p","1080p"];
-  var bitrateSelect = document.createElement("select");
-  bitrateSelect.id ="bitrateSelect";
-  bitrateDiv.innerHTML="Quality:";
-  bitrateDiv.appendChild(bitrateSelect);
-  for(var i = 0;i < bitrates.length;i++){
-  var option=document.createElement("option");
-  option.setAttribute("value", i);
-  if(i==3)
-    option.setAttribute("selected","selected");
-  option.text = bitrates[i];
-  bitrateSelect.appendChild(option);
-  }
-  bitrateSelect.onchange = (evt) => { updateResolution(Number.parseInt(evt.srcElement.value)+2); } 
 
   bitrateInfo = document.createElement('span');
   bitrateInfo.id ="bitrateInfo";
   bitrateInfo.innterHTML="<br> Informations:";
   bitrateDiv.appendChild(bitrateInfo);
   playerDiv.appendChild(bitrateDiv);
+  populateResoultionSelector(currentResolutionIndex, bitrateDiv);
 
   // add fullscreen button
   const elementFullscreenButton = document.createElement('img');
