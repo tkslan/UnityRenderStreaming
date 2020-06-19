@@ -5,7 +5,7 @@
   "unity": "2019.3",
   "description": "This is a package for using Unity Render Streaming technology. It contains two samples to use the technology.",
   "dependencies": {
-    "com.unity.webrtc": "https://github.com/tkslan/com.unity.webrtc.git#fix/Tomi",
+    "com.unity.webrtc": "https://github.com/tkslan/com.unity.webrtc.git#2.0.2-tomi",
     "com.unity.inputsystem": "1.0.0"
   }
 }
